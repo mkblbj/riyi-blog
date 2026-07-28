@@ -1,4 +1,6 @@
+import { access } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
+import { NAV_ITEMS } from "../src/navigation.js";
 import {
   CATEGORIES,
   PLATFORM_URL,
@@ -24,5 +26,31 @@ describe("site contract", () => {
       "房产政策",
       "公司动态",
     ]);
+  });
+
+  it("uses the approved public navigation", () => {
+    expect(NAV_ITEMS).toEqual([
+      { text: "首页", link: "/" },
+      { text: "租房指南", link: "/categories/?category=租房指南" },
+      { text: "买房指南", link: "/categories/?category=买房指南" },
+      { text: "日本生活", link: "/categories/?category=日本生活" },
+      { text: "区域介绍", link: "/categories/?category=区域介绍" },
+      { text: "关于日宜", link: "/about/" },
+      { text: "房产平台", link: "https://riyihome.com" },
+    ]);
+  });
+
+  it("contains every required fixed page", async () => {
+    await Promise.all(
+      [
+        "site/index.md",
+        "site/categories/index.md",
+        "site/tags/index.md",
+        "site/archives/index.md",
+        "site/about/index.md",
+        "site/privacy/index.md",
+        "site/404.md",
+      ].map((path) => expect(access(path)).resolves.toBeUndefined()),
+    );
   });
 });

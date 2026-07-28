@@ -8,6 +8,7 @@
     "node": "22.x"
   },
   "scripts": {
+    "brand:generate": "tsx scripts/brand/generate-assets.ts",
     "dev": "pnpm content:prepare && vitepress dev site",
     "content:prepare": "tsx scripts/content/prepare.ts",
     "build": "pnpm content:prepare && vitepress build site",

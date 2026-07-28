@@ -1,0 +1,21 @@
+:root {
+  --vp-c-brand-1: #1f6658;
+  --vp-c-brand-2: #174f45;
+  --vp-c-brand-3: #123f37;
+  --vp-c-brand-soft: rgba(31, 102, 88, 0.14);
+  --vp-font-family-base:
+    "Noto Sans SC", "Noto Sans JP", "Hiragino Sans", "PingFang SC",
+    sans-serif;
+}
+
+.tk-banner-content__name {
+  letter-spacing: 0.08em;
+}
+
+.vp-doc a {
+  text-underline-offset: 0.18em;
+}
+
+.VPNavBarTitle .title {
+  font-weight: 700;
+}
