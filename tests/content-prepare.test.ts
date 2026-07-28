@@ -2,6 +2,7 @@ import { mkdtemp, mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import matter from "gray-matter";
+import sharp from "sharp";
 import { describe, expect, it } from "vitest";
 import { prepareContent } from "../scripts/content/prepare.js";
 
@@ -35,7 +36,16 @@ async function fixture() {
   await mkdir(join(root, "content/posts"), { recursive: true });
   await mkdir(join(root, "content/media"), { recursive: true });
   await mkdir(join(root, "site"), { recursive: true });
-  await writeFile(join(root, "content/media/cover.png"), "image");
+  await sharp({
+    create: {
+      width: 80,
+      height: 45,
+      channels: 3,
+      background: "#d7c3a4",
+    },
+  })
+    .png()
+    .toFile(join(root, "content/media/cover.png"));
   await writePost(root, publishedId, "published", "已发布文章");
   await writePost(root, draftId, "draft", "草稿文章");
   await writePost(root, archivedId, "archived", "归档文章");
@@ -49,7 +59,6 @@ describe("prepareContent", () => {
       contentDir: join(root, "content"),
       siteDir: join(root, "site"),
       manifestPath: join(root, ".generated/posts.json"),
-      optimizeImages: false,
     });
 
     expect(manifest.posts.map((post) => post.id)).toEqual([publishedId]);
@@ -61,6 +70,9 @@ describe("prepareContent", () => {
     );
     const parsed = matter(output);
     expect(parsed.data.author).toEqual({ name: "日宜房产" });
+    expect(parsed.data.coverImg).toMatch(
+      /^\/media\/cover\.[a-f0-9]{12}\.webp$/,
+    );
     expect(parsed.data.permalink).toBe(`/posts/${publishedId}/`);
     expect(parsed.data.comment).toBe(false);
     expect(parsed.data.status).toBeUndefined();

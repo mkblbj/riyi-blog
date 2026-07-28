@@ -1,6 +1,7 @@
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { applyMediaManifest, optimizeMedia } from "./images.js";
 import { loadPosts } from "./load-posts.js";
 import { renderPost, toPublicPost } from "./render-post.js";
 import { BuildManifest, PrepareOptions } from "./schema.js";
@@ -20,9 +21,17 @@ export async function prepareContent(
   await mkdir(postsOutput, { recursive: true });
 
   const loaded = await loadPosts(options.contentDir);
+  const media =
+    options.optimizeImages === false
+      ? undefined
+      : await optimizeMedia(
+          join(options.contentDir, "media"),
+          join(options.siteDir, "public/media"),
+        );
   const posts = loaded
     .filter((post) => post.data.status === "published")
     .map(toPublicPost)
+    .map((post) => (media ? applyMediaManifest(post, media) : post))
     .sort((left, right) => right.date.localeCompare(left.date));
 
   for (const post of posts) {
