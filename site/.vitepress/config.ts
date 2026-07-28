@@ -1,4 +1,5 @@
 import { defineConfig } from "vitepress";
+import { teekCssPlugin } from "../../scripts/vite/teek-css.js";
 import { NAV_ITEMS } from "../../src/navigation.js";
 import {
   buildGlobalHead,
@@ -10,6 +11,9 @@ import { teekConfig } from "./teek-config.js";
 
 export default defineConfig({
   extends: teekConfig,
+  vite: {
+    plugins: [teekCssPlugin()],
+  },
   title: SITE_TITLE,
   titleTemplate: `:title｜${SITE_TITLE}`,
   description: SITE_DESCRIPTION,
