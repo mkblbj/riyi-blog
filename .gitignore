@@ -2,6 +2,7 @@ node_modules/
 .generated/
 site/posts/
 site/public/media/
+site/public/rss.xml
 site/.vitepress/cache/
 site/.vitepress/dist/
 .env
