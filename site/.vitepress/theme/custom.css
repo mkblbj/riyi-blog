@@ -4,8 +4,9 @@
   --vp-c-brand-3: #123f37;
   --vp-c-brand-soft: rgba(31, 102, 88, 0.14);
   --vp-font-family-base:
-    "Noto Sans SC", "Noto Sans JP", "Hiragino Sans", "PingFang SC",
-    sans-serif;
+    "Punctuation SC", "PingFang SC", "Microsoft YaHei",
+    "Noto Sans CJK SC", "Noto Sans SC", "Source Han Sans SC",
+    "Hiragino Sans GB", sans-serif;
 }
 
 .tk-banner-content__name {

@@ -1,4 +1,4 @@
-import { access } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { NAV_ITEMS } from "../src/navigation.js";
 import {
@@ -69,6 +69,29 @@ describe("site contract", () => {
     );
     expect(pluginNames).not.toContain(
       "vite-plugin-vitepress-use-permalink",
+    );
+  });
+
+  it("selects a Simplified Chinese font before Japanese fallbacks", async () => {
+    const css = await readFile(
+      "site/.vitepress/theme/custom.css",
+      "utf8",
+    );
+    const declaration = css.match(
+      /--vp-font-family-base:\s*([^;]+);/,
+    )?.[1];
+    const families = declaration
+      ?.split(",")
+      .map((family) => family.trim().replace(/^["']|["']$/g, ""));
+    const availableFonts = new Set([
+      "Noto Sans JP",
+      "Hiragino Sans",
+      "PingFang SC",
+      "sans-serif",
+    ]);
+
+    expect(families?.find((family) => availableFonts.has(family))).toBe(
+      "PingFang SC",
     );
   });
 });
