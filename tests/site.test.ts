@@ -8,6 +8,7 @@ import {
   SITE_TITLE,
   SITE_URL,
 } from "../src/site.js";
+import { teekConfig } from "../site/.vitepress/teek-config.js";
 
 describe("site contract", () => {
   it("keeps the blog and property platform on separate hosts", () => {
@@ -51,6 +52,23 @@ describe("site contract", () => {
         "site/privacy/index.md",
         "site/404.md",
       ].map((path) => expect(access(path)).resolves.toBeUndefined()),
+    );
+  });
+
+  it("does not rewrite native directory article routes on the client", () => {
+    const pluginNames = (teekConfig.vite?.plugins ?? [])
+      .flat()
+      .map((plugin) =>
+        plugin && typeof plugin === "object" && "name" in plugin
+          ? plugin.name
+          : "",
+      );
+
+    expect(pluginNames).not.toContain(
+      "vite-plugin-vitepress-auto-permalink",
+    );
+    expect(pluginNames).not.toContain(
+      "vite-plugin-vitepress-use-permalink",
     );
   });
 });

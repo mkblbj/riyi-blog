@@ -4,6 +4,7 @@ export const teekConfig = defineTeekConfig({
   teekTheme: true,
   teekHome: true,
   vpHome: false,
+  vitePlugins: { permalink: false },
   loading: false,
   homeCardListPosition: "right",
   author: { name: "日宜房产", link: "https://riyihome.com" },
