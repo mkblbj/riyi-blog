@@ -1,0 +1,42 @@
+name: Clean old hashed assets
+
+on:
+  schedule:
+    - cron: "23 2 1 * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Only list candidates without deleting
+        required: true
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production-cleanup
+    concurrency:
+      group: riyi-blog-cleanup
+      cancel-in-progress: false
+    env:
+      ALIYUN_CLEANUP_ACCESS_KEY_ID: ${{ secrets.ALIYUN_CLEANUP_ACCESS_KEY_ID }}
+      ALIYUN_CLEANUP_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_CLEANUP_ACCESS_KEY_SECRET }}
+      ALIYUN_OSS_REGION: ${{ vars.ALIYUN_OSS_REGION }}
+      ALIYUN_OSS_BUCKET: ${{ vars.ALIYUN_OSS_BUCKET }}
+      CLEANUP_DRY_RUN: ${{ github.event_name == 'schedule' && 'false' || inputs.dry_run }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.34.5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm cleanup:run

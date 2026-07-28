@@ -17,6 +17,7 @@
     "test:watch": "vitest",
     "verify": "tsx scripts/verify-build.ts",
     "check": "pnpm test && pnpm build && pnpm verify",
+    "cleanup:run": "tsx scripts/deploy/cleanup.ts",
     "deploy:run": "tsx scripts/deploy/run.ts",
     "smoke": "tsx scripts/smoke.ts"
   },

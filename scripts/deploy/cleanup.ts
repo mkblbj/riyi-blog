@@ -1,4 +1,7 @@
+import { resolve } from "node:path";
+import { planUpload } from "./cache-policy.js";
 import {
+  createOssClient,
   listAllObjects,
   type OssListDeleteClient,
   type RemoteOssObject,
@@ -45,4 +48,35 @@ export async function runCleanup(
     );
   }
   return candidates;
+}
+
+if (process.argv[1]?.endsWith("cleanup.ts")) {
+  const dryRun = process.env.CLEANUP_DRY_RUN !== "false";
+  const required = [
+    "ALIYUN_CLEANUP_ACCESS_KEY_ID",
+    "ALIYUN_CLEANUP_ACCESS_KEY_SECRET",
+    "ALIYUN_OSS_REGION",
+    "ALIYUN_OSS_BUCKET",
+  ] as const;
+  const missing = required.filter((name) => !process.env[name]);
+  if (missing.length) {
+    throw new Error(
+      `Missing cleanup environment: ${missing.join(", ")}`,
+    );
+  }
+  const plan = await planUpload(
+    resolve(import.meta.dirname, "../../site/.vitepress/dist"),
+  );
+  const current = new Set(
+    [...plan.assets, ...plan.documents].map((entry) => entry.objectName),
+  );
+  const client = createOssClient({
+    ALIYUN_ACCESS_KEY_ID:
+      process.env.ALIYUN_CLEANUP_ACCESS_KEY_ID!,
+    ALIYUN_ACCESS_KEY_SECRET:
+      process.env.ALIYUN_CLEANUP_ACCESS_KEY_SECRET!,
+    ALIYUN_OSS_REGION: process.env.ALIYUN_OSS_REGION!,
+    ALIYUN_OSS_BUCKET: process.env.ALIYUN_OSS_BUCKET!,
+  }) as unknown as OssListDeleteClient;
+  await runCleanup(client, current, new Date(), dryRun);
 }
