@@ -118,7 +118,7 @@ Secrets 只在 GitHub UI 输入一次，不粘贴到 Issue、日志、Pages CMS�
 1. 打开 https://app.pagescms.org/，使用客户 GitHub 账号登录。
 2. 安装 Pages CMS GitHub App 时选择 “Only select repositories”，只勾选 Private 仓库 `riyi-blog`。
 3. 在 Pages CMS 打开 `main`，确认能读取 `.pages.yml`，新文章默认显示为“草稿”。
-4. GitHub 仓库 Settings → Rules → Rulesets：保护 `main`，禁止 force push 和 branch deletion。
+4. GitHub 仓库 Settings → Rules → Rulesets：保护 `main`，禁止 force push 和 branch deletion。当前账号套餐对 Private 仓库 Rulesets API 返回 403；在升级 GitHub Pro 前保持仓库 Private，不启用 force push，并以 Git revert 回滚。升级后再补上这两条规则，不添加强制 PR，以免阻止 Pages CMS 保存文章。
 5. GitHub Actions 权限保持只读默认权限；workflow 只声明 `contents: read`。
 
 ## DNS 切换

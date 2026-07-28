@@ -12,6 +12,7 @@
 - [ ] `www` CNAME 已生效，根域记录未修改
 - [ ] 发布 RAM 的删除权限只覆盖目标 Bucket 的 `*.html`
 - [ ] 清理 RAM 无上传和 CDN 权限
+- [ ] Private 仓库 `main` 已禁止 force push 和删除（当前套餐需升级 GitHub Pro）
 
 ## 自动验证
 
