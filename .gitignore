@@ -1,0 +1,10 @@
+node_modules/
+.generated/
+site/posts/
+site/public/media/
+site/.vitepress/cache/
+site/.vitepress/dist/
+.env
+.env.*
+!.env.example
+.DS_Store
