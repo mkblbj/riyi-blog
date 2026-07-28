@@ -9,7 +9,7 @@ async function workflow(name: string) {
 }
 
 describe("GitHub Actions", () => {
-  it("builds main and accepts the Pages CMS payload", async () => {
+  it("builds main, accepts the Pages CMS payload, and always enters the production environment", async () => {
     const deploy = await workflow("deploy");
     expect(deploy.on.push.branches).toEqual(["main"]);
     expect(deploy.on.workflow_dispatch.inputs.payload).toMatchObject({
@@ -17,9 +17,7 @@ describe("GitHub Actions", () => {
       type: "string",
     });
     expect(deploy.jobs.deploy.environment).toBe("production");
-    expect(deploy.jobs.deploy.if).toBe(
-      "${{ vars.ALIYUN_OSS_BUCKET != '' }}",
-    );
+    expect(deploy.jobs.deploy.if).toBeUndefined();
     expect(deploy.jobs.deploy.concurrency).toEqual({
       group: "riyi-blog-production",
       "cancel-in-progress": false,
