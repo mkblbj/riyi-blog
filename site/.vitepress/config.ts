@@ -1,5 +1,10 @@
 import { defineConfig } from "vitepress";
 import { NAV_ITEMS } from "../../src/navigation.js";
+import {
+  buildGlobalHead,
+  buildPageHead,
+  filterPublicSitemapItems,
+} from "../../src/seo.js";
 import { SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from "../../src/site.js";
 import { teekConfig } from "./teek-config.js";
 
@@ -13,6 +18,16 @@ export default defineConfig({
   lastUpdated: true,
   head: [
     ["link", { rel: "icon", type: "image/png", href: "/brand/og-default.png" }],
+    [
+      "link",
+      {
+        rel: "alternate",
+        type: "application/rss+xml",
+        title: `${SITE_TITLE}博客 RSS`,
+        href: "/rss.xml",
+      },
+    ],
+    ...buildGlobalHead(process.env),
   ],
   markdown: {
     image: { lazyLoading: true },
@@ -24,7 +39,25 @@ export default defineConfig({
       detailsLabel: "详情",
     },
   },
-  sitemap: { hostname: SITE_URL },
+  sitemap: {
+    hostname: SITE_URL,
+    transformItems: filterPublicSitemapItems,
+  },
+  transformPageData(pageData) {
+    const pageHead = buildPageHead({
+      relativePath: pageData.relativePath,
+      title: pageData.title,
+      description:
+        typeof pageData.frontmatter.description === "string"
+          ? pageData.frontmatter.description
+          : SITE_DESCRIPTION,
+      frontmatter: pageData.frontmatter,
+    });
+    pageData.frontmatter.head = [
+      ...(pageData.frontmatter.head ?? []),
+      ...pageHead,
+    ];
+  },
   themeConfig: {
     nav: [...NAV_ITEMS],
     search: {

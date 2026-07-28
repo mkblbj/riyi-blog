@@ -1,6 +1,7 @@
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { writeRss } from "../rss.js";
 import { applyMediaManifest, optimizeMedia } from "./images.js";
 import { loadPosts } from "./load-posts.js";
 import { renderPost, toPublicPost } from "./render-post.js";
@@ -50,6 +51,7 @@ export async function prepareContent(
     JSON.stringify(manifest, null, 2),
     "utf8",
   );
+  await writeRss(manifest, join(options.siteDir, "public/rss.xml"));
   return manifest;
 }
 
