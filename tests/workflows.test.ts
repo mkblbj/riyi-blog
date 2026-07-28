@@ -17,6 +17,9 @@ describe("GitHub Actions", () => {
       type: "string",
     });
     expect(deploy.jobs.deploy.environment).toBe("production");
+    expect(deploy.jobs.deploy.if).toBe(
+      "${{ vars.ALIYUN_OSS_BUCKET != '' }}",
+    );
     expect(deploy.jobs.deploy.concurrency).toEqual({
       group: "riyi-blog-production",
       "cancel-in-progress": false,
