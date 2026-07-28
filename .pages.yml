@@ -1,0 +1,157 @@
+media:
+  - name: article_images
+    label: 文章图片
+    input: content/media
+    output: /media
+    rename: random
+    extensions: [jpg, jpeg, png, webp]
+
+content:
+  - name: posts
+    label: 文章
+    type: collection
+    path: content/posts
+    format: yaml-frontmatter
+    subfolders: false
+    filename:
+      template: "{id}.md"
+      field: false
+    operations:
+      create: true
+      rename: false
+      delete: false
+    view:
+      fields: [title, status, date, categories]
+      primary: title
+      sort: [date, title, status]
+      search: [title, description, tags, authorName]
+      default:
+        sort: date
+        order: desc
+    fields:
+      - name: id
+        label: 文章编号
+        type: uuid
+        required: true
+        readonly: true
+        description: 系统自动生成，用于保持文章网址不变。
+        options:
+          editable: false
+          generate: false
+      - name: title
+        label: 标题
+        type: string
+        required: true
+        options:
+          maxlength: 120
+      - name: description
+        label: 摘要
+        type: text
+        required: true
+        description: 用于首页摘要、搜索引擎和微信分享，建议 40 至 160 字。
+        options:
+          minlength: 20
+          maxlength: 320
+      - name: coverImg
+        label: 封面图
+        type: image
+        required: true
+        options:
+          media: article_images
+          rename: random
+      - name: categories
+        label: 分类
+        type: select
+        required: true
+        options:
+          multiple: true
+          min: 1
+          max: 1
+          values:
+            - name: 租房指南
+              label: 租房指南
+            - name: 买房指南
+              label: 买房指南
+            - name: 日本生活
+              label: 日本生活
+            - name: 区域介绍
+              label: 区域介绍
+            - name: 房产政策
+              label: 房产政策
+            - name: 公司动态
+              label: 公司动态
+      - name: tags
+        label: 标签
+        type: string
+        list: true
+        default: []
+        description: 可填写多个，例如“东京”“外国人租房”。
+      - name: authorName
+        label: 作者
+        type: string
+        required: true
+        default: 日宜房产
+      - name: date
+        label: 发布时间
+        type: date
+        required: true
+        options:
+          time: true
+          format: "yyyy-MM-dd'T'HH:mm:ssXXX"
+          step: 60
+      - name: top
+        label: 精选文章
+        type: boolean
+        default: false
+      - name: sticky
+        label: 置顶顺序
+        type: number
+        description: 留空表示不置顶；数字越小越靠前。
+        options:
+          min: 1
+          step: 1
+      - name: status
+        label: 状态
+        type: select
+        required: true
+        default: draft
+        options:
+          values:
+            - name: draft
+              label: 草稿
+            - name: published
+              label: 已发布
+            - name: archived
+              label: 已归档
+      - name: body
+        label: 正文
+        type: rich-text
+        required: true
+        options:
+          format: markdown
+          switcher: true
+          media: article_images
+          rename: random
+
+settings:
+  hide: true
+  content:
+    merge: false
+  commit:
+    identity: user
+    templates:
+      create: "content: 新建 {path}"
+      update: "content: 更新 {path}"
+      delete: "content: 删除 {path}"
+      rename: "content: 重命名 {oldPath} -> {newPath}"
+
+actions:
+  - name: redeploy
+    label: 重新部署博客
+    workflow: deploy.yml
+    ref: current
+    cancelable: false
+    confirm:
+      title: 重新部署博客？
+      message: 将使用当前内容重新构建并发布到正式网站。
+      button: 开始部署
