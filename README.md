@@ -1,6 +1,6 @@
 # riyi-blog
 
-日宜房产独立博客，公开地址为 https://www.riyihome.com。
+日宜房产独立博客
 
 - 前台：VitePress + vitepress-theme-teek
 - 写作：Pages CMS 托管版
