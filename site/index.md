@@ -1,6 +1,6 @@
 ---
 layout: home
 article: false
-title: 日宜房产博客
-description: 分享日本租房、买房、区域选择与日常生活的实用信息。
+title: 日宜房产
+description: 日宜房产提供日本房产租赁、买卖与安居服务，并整理区域选择、流程费用和日常生活的实用内容。
 ---

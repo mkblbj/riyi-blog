@@ -27,7 +27,7 @@ export default defineConfig({
       {
         rel: "alternate",
         type: "application/rss+xml",
-        title: `${SITE_TITLE}博客 RSS`,
+        title: `${SITE_TITLE}资讯 RSS`,
         href: "/rss.xml",
       },
     ],

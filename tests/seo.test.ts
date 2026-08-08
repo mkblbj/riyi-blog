@@ -103,6 +103,8 @@ describe("SEO", () => {
     expect(xml).toContain(
       "https://www.riyihome.com/posts/79f45644-f457-4b94-a288-44780fd8f199/",
     );
+    expect(xml).toContain("<title>日宜房产资讯</title>");
+    expect(xml).not.toContain("<title>日宜房产博客</title>");
     expect(xml).toContain("欢迎来到日宜房产博客");
     expect(xml).not.toContain("draft");
   });

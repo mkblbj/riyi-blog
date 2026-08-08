@@ -13,7 +13,7 @@ export async function writeRss(
   outputPath: string,
 ): Promise<void> {
   const feed = new Feed({
-    title: `${SITE_TITLE}博客`,
+    title: `${SITE_TITLE}资讯`,
     description: SITE_DESCRIPTION,
     id: SITE_URL,
     link: SITE_URL,

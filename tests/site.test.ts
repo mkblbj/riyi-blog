@@ -1,4 +1,5 @@
 import { access, readFile } from "node:fs/promises";
+import matter from "gray-matter";
 import { describe, expect, it } from "vitest";
 import { NAV_ITEMS } from "../src/navigation.js";
 import { PLATFORM_LINKS } from "../src/platform-links.js";
@@ -68,6 +69,14 @@ describe("site contract", () => {
         "site/404.md",
       ].map((path) => expect(access(path)).resolves.toBeUndefined()),
     );
+  });
+
+  it("uses the official-site identity on the homepage", async () => {
+    const source = await readFile("site/index.md", "utf8");
+    const { data } = matter(source);
+
+    expect(data.title).toBe(SITE_TITLE);
+    expect(data.description).toBe(SITE_DESCRIPTION);
   });
 
   it("does not rewrite native directory article routes on the client", () => {

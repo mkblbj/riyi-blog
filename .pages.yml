@@ -147,11 +147,11 @@ settings:
 
 actions:
   - name: redeploy
-    label: 重新部署博客
+    label: 重新部署官网
     workflow: deploy.yml
     ref: current
     cancelable: false
     confirm:
-      title: 重新部署博客？
+      title: 重新部署官网？
       message: 将使用当前内容重新构建并发布到正式网站。
       button: 开始部署

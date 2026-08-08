@@ -62,7 +62,7 @@ describe("Pages CMS configuration", () => {
     expect(config.actions).toEqual([
       expect.objectContaining({
         name: "redeploy",
-        label: "重新部署博客",
+        label: "重新部署官网",
         workflow: "deploy.yml",
         ref: "current",
         cancelable: false,
