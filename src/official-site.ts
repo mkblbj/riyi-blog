@@ -1,4 +1,7 @@
-import { PLATFORM_LINKS } from "./platform-links.js";
+import {
+  APP_DOWNLOAD_LINKS,
+  PLATFORM_LINKS,
+} from "./platform-links.js";
 
 export interface PromotionCard {
   title: string;
@@ -16,6 +19,42 @@ export interface OfficialAction {
   description: string;
   tone: "primary" | "secondary" | "quiet";
 }
+
+export interface AppDownloadAction {
+  id: "app-store" | "google-play" | "wechat-mini-program";
+  label: string;
+  description: string;
+  kind: "link" | "copy";
+  value: string;
+  iconUrl: string;
+}
+
+export const APP_DOWNLOAD_ACTIONS: readonly AppDownloadAction[] = [
+  {
+    id: "app-store",
+    label: "App Store",
+    description: "iPhone 版日宜找房",
+    kind: "link",
+    value: APP_DOWNLOAD_LINKS.appStore,
+    iconUrl: "https://cdn.simpleicons.org/apple/111111",
+  },
+  {
+    id: "google-play",
+    label: "Google Play",
+    description: "Android 版日宜找房",
+    kind: "link",
+    value: APP_DOWNLOAD_LINKS.googlePlay,
+    iconUrl: "https://cdn.simpleicons.org/googleplay/34A853",
+  },
+  {
+    id: "wechat-mini-program",
+    label: "微信小程序",
+    description: "复制口令后在微信打开",
+    kind: "copy",
+    value: APP_DOWNLOAD_LINKS.wechatMiniProgram,
+    iconUrl: "https://cdn.simpleicons.org/wechat/07C160",
+  },
+] as const;
 
 export const HOME_SERVICES: readonly ServiceCard[] = [
   {
