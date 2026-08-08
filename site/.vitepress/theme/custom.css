@@ -3,13 +3,33 @@
   --vp-c-brand-2: #174f45;
   --vp-c-brand-3: #123f37;
   --vp-c-brand-soft: rgba(31, 102, 88, 0.14);
+  --riyi-forest: #17352f;
+  --riyi-forest-strong: #102a25;
+  --riyi-mint: #dcece7;
+  --riyi-surface: #ffffff;
+  --riyi-surface-soft: #f2f7f5;
+  --riyi-border: rgba(31, 102, 88, 0.18);
+  --riyi-muted: #5f6f6a;
+  --riyi-shadow: 0 22px 55px rgba(20, 55, 48, 0.09);
   --vp-font-family-base:
     "Punctuation SC", "PingFang SC", "Microsoft YaHei",
     "Noto Sans CJK SC", "Noto Sans SC", "Source Han Sans SC",
     "Hiragino Sans GB", sans-serif;
 }
 
-.tk-banner-content__name {
+.dark {
+  --riyi-forest: #1b453c;
+  --riyi-forest-strong: #12342d;
+  --riyi-mint: #b7d4cb;
+  --riyi-surface: #202321;
+  --riyi-surface-soft: #252a27;
+  --riyi-border: rgba(153, 201, 187, 0.2);
+  --riyi-muted: #aab8b3;
+  --riyi-shadow: 0 22px 55px rgba(0, 0, 0, 0.22);
+}
+
+.tk-banner-content__name,
+.tk-banner-content__title {
   letter-spacing: 0.08em;
 }
 
@@ -19,4 +39,473 @@
 
 .VPNavBarTitle .title {
   font-weight: 700;
+}
+
+.riyi-home-promotion {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(4.5rem, 8vw, 7rem) 0 clamp(3.5rem, 6vw, 5.5rem);
+  background:
+    radial-gradient(circle at 8% 8%, rgba(31, 102, 88, 0.08), transparent 28rem),
+    var(--vp-c-bg);
+}
+
+.riyi-home-promotion::before {
+  position: absolute;
+  top: 4.5rem;
+  right: -8rem;
+  width: 22rem;
+  height: 22rem;
+  border: 1px solid var(--riyi-border);
+  border-radius: 50%;
+  content: "";
+  pointer-events: none;
+}
+
+.riyi-content-shell {
+  position: relative;
+  z-index: 1;
+  width: min(calc(100% - 3rem), 74rem);
+  margin: 0 auto;
+}
+
+.riyi-eyebrow {
+  margin: 0 0 0.75rem;
+  color: var(--vp-c-brand-1);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+.riyi-promotion-intro {
+  max-width: 46rem;
+}
+
+.riyi-promotion-intro h2,
+.riyi-advantages-heading h2,
+.riyi-action-copy h2,
+.riyi-section-heading h2,
+.riyi-article-cta h2 {
+  margin: 0;
+  color: var(--vp-c-text-1);
+  font-size: clamp(1.75rem, 3.2vw, 2.7rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+.riyi-promotion-intro > p:last-child,
+.riyi-advantages-heading > p:last-child,
+.riyi-section-heading > p:last-child,
+.riyi-article-cta > div > p:last-child {
+  max-width: 42rem;
+  margin: 1rem 0 0;
+  color: var(--riyi-muted);
+  font-size: 1rem;
+  line-height: 1.8;
+}
+
+.riyi-service-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.125rem;
+  margin-top: 2.5rem;
+}
+
+.riyi-service-card {
+  display: flex;
+  min-height: 18.5rem;
+  flex-direction: column;
+  padding: 2rem;
+  border: 1px solid var(--riyi-border);
+  border-radius: 1.25rem;
+  background: var(--riyi-surface);
+  box-shadow: var(--riyi-shadow);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.riyi-service-index {
+  display: inline-flex;
+  width: 2.6rem;
+  height: 2.6rem;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2rem;
+  border-radius: 0.8rem;
+  background: var(--vp-c-brand-soft);
+  color: var(--vp-c-brand-1);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.riyi-service-card h3,
+.riyi-advantage-card h3 {
+  margin: 0;
+  color: var(--vp-c-text-1);
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.riyi-service-card > p,
+.riyi-advantage-card p {
+  margin: 0.85rem 0 0;
+  color: var(--riyi-muted);
+  font-size: 0.94rem;
+  line-height: 1.75;
+}
+
+.riyi-text-link {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  margin-top: auto;
+  padding-top: 1.5rem;
+  color: var(--vp-c-brand-1);
+  font-size: 0.92rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.riyi-text-link span {
+  margin-left: 0.45rem;
+  transition: transform 180ms ease;
+}
+
+.riyi-advantages {
+  display: grid;
+  grid-template-columns: minmax(15rem, 0.8fr) minmax(0, 1.35fr);
+  gap: clamp(2rem, 6vw, 5rem);
+  align-items: start;
+  margin-top: clamp(4.5rem, 8vw, 7rem);
+  padding: clamp(2rem, 5vw, 4rem);
+  border: 1px solid var(--riyi-border);
+  border-radius: 1.75rem;
+  background: var(--riyi-surface-soft);
+}
+
+.riyi-advantages-heading {
+  position: sticky;
+  top: 6rem;
+}
+
+.riyi-advantage-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.riyi-advantage-card {
+  display: flex;
+  min-height: 12rem;
+  padding: 1.5rem;
+  border: 1px solid transparent;
+  border-radius: 1rem;
+  background: var(--riyi-surface);
+}
+
+.riyi-check {
+  display: inline-flex;
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 2rem;
+  align-items: center;
+  justify-content: center;
+  margin-right: 1rem;
+  border-radius: 50%;
+  background: var(--vp-c-brand-soft);
+  color: var(--vp-c-brand-1);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.riyi-action-panel {
+  position: relative;
+  display: grid;
+  overflow: hidden;
+  grid-template-columns: minmax(15rem, 0.8fr) minmax(0, 1.4fr);
+  gap: clamp(2rem, 5vw, 4.5rem);
+  align-items: center;
+  margin-top: clamp(4rem, 8vw, 7rem);
+  padding: clamp(2rem, 5vw, 4rem);
+  border-radius: 1.75rem;
+  background: var(--riyi-forest);
+  box-shadow: 0 28px 70px rgba(16, 42, 37, 0.22);
+  color: #ffffff;
+}
+
+.riyi-action-panel::after {
+  position: absolute;
+  right: -4rem;
+  bottom: -7rem;
+  width: 18rem;
+  height: 18rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  content: "";
+  pointer-events: none;
+}
+
+.riyi-action-copy,
+.riyi-action-list {
+  position: relative;
+  z-index: 1;
+}
+
+.riyi-action-copy .riyi-eyebrow {
+  color: var(--riyi-mint);
+}
+
+.riyi-action-copy h2 {
+  color: #ffffff;
+}
+
+.riyi-action-copy > p:last-child {
+  margin: 0.85rem 0 0;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.7;
+}
+
+.riyi-action-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.riyi-action-link {
+  display: flex;
+  min-height: 6.5rem;
+  flex-direction: column;
+  justify-content: center;
+  padding: 1rem 1.15rem;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 1rem;
+  color: #ffffff;
+  text-decoration: none;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    transform 180ms ease;
+}
+
+.riyi-action-link span {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.riyi-action-link small {
+  margin-top: 0.35rem;
+  color: inherit;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  opacity: 0.68;
+}
+
+.riyi-action-link--primary {
+  border-color: #ffffff;
+  background: #ffffff;
+  color: var(--riyi-forest-strong);
+}
+
+.riyi-action-link--secondary {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.riyi-action-link--quiet {
+  background: transparent;
+}
+
+.riyi-section-heading {
+  margin: 0 0 1.5rem;
+  padding: 0.25rem 0 0.75rem;
+}
+
+.riyi-section-heading h2 {
+  font-size: clamp(1.55rem, 2.4vw, 2rem);
+}
+
+.riyi-section-heading > p:last-child {
+  margin-top: 0.65rem;
+  font-size: 0.92rem;
+}
+
+.riyi-article-cta {
+  position: relative;
+  overflow: hidden;
+  margin: 2rem 0 0;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  border: 1px solid var(--riyi-border);
+  border-radius: 1.25rem;
+  background:
+    linear-gradient(135deg, rgba(31, 102, 88, 0.12), transparent 65%),
+    var(--riyi-surface-soft);
+}
+
+.riyi-article-cta h2 {
+  font-size: clamp(1.4rem, 2.5vw, 1.85rem);
+}
+
+.riyi-article-cta__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.riyi-article-cta__link {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0.65rem 1.1rem;
+  border: 1px solid var(--riyi-border);
+  border-radius: 0.8rem;
+  color: var(--vp-c-text-1);
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.riyi-article-cta__link--primary {
+  border-color: var(--vp-c-brand-1);
+  background: var(--vp-c-brand-1);
+  color: #ffffff;
+}
+
+.riyi-article-cta__link--secondary {
+  border-color: var(--vp-c-brand-1);
+  color: var(--vp-c-brand-1);
+}
+
+.riyi-text-link:focus-visible,
+.riyi-action-link:focus-visible,
+.riyi-article-cta__link:focus-visible {
+  outline: 3px solid #6dc2aa;
+  outline-offset: 3px;
+}
+
+@media (hover: hover) {
+  .riyi-service-card:hover {
+    border-color: rgba(31, 102, 88, 0.4);
+    box-shadow: 0 28px 65px rgba(20, 55, 48, 0.14);
+    transform: translateY(-4px);
+  }
+
+  .riyi-text-link:hover span {
+    transform: translateX(0.25rem);
+  }
+
+  .riyi-action-link:hover,
+  .riyi-article-cta__link:hover {
+    transform: translateY(-2px);
+  }
+
+  .riyi-action-link--secondary:hover,
+  .riyi-action-link--quiet:hover {
+    border-color: rgba(255, 255, 255, 0.54);
+    background: rgba(255, 255, 255, 0.18);
+  }
+
+  .riyi-article-cta__link--primary:hover {
+    border-color: var(--vp-c-brand-2);
+    background: var(--vp-c-brand-2);
+  }
+
+  .riyi-article-cta__link--secondary:hover,
+  .riyi-article-cta__link--quiet:hover {
+    border-color: var(--vp-c-brand-1);
+    background: var(--vp-c-brand-soft);
+    color: var(--vp-c-brand-1);
+  }
+}
+
+@media (max-width: 960px) {
+  .riyi-advantages,
+  .riyi-action-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .riyi-advantages-heading {
+    position: static;
+  }
+}
+
+@media (max-width: 767px) {
+  .riyi-home-promotion {
+    padding: 3.75rem 0 3rem;
+  }
+
+  .riyi-content-shell {
+    width: min(calc(100% - 2rem), 74rem);
+  }
+
+  .riyi-promotion-intro h2,
+  .riyi-advantages-heading h2,
+  .riyi-action-copy h2 {
+    font-size: 1.75rem;
+  }
+
+  .riyi-service-grid,
+  .riyi-advantage-grid,
+  .riyi-action-list {
+    grid-template-columns: 1fr;
+  }
+
+  .riyi-service-card {
+    min-height: auto;
+    padding: 1.5rem;
+  }
+
+  .riyi-service-index {
+    margin-bottom: 1.4rem;
+  }
+
+  .riyi-text-link {
+    margin-top: 1.75rem;
+    padding-top: 0;
+  }
+
+  .riyi-advantages,
+  .riyi-action-panel {
+    margin-top: 3.75rem;
+    padding: 1.5rem;
+    border-radius: 1.25rem;
+  }
+
+  .riyi-advantage-card {
+    min-height: auto;
+  }
+
+  .riyi-action-link {
+    min-height: 5.25rem;
+  }
+
+  .riyi-article-cta__actions,
+  .riyi-article-cta__link {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .riyi-service-card,
+  .riyi-text-link span,
+  .riyi-action-link,
+  .riyi-article-cta__link {
+    transition: none;
+  }
+
+  .riyi-service-card:hover,
+  .riyi-action-link:hover,
+  .riyi-article-cta__link:hover {
+    transform: none;
+  }
 }
