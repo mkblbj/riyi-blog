@@ -1,4 +1,5 @@
 import { defineTeekConfig } from "vitepress-theme-teek/config";
+import { PLATFORM_LINKS } from "../../src/platform-links.js";
 
 export const teekConfig = defineTeekConfig({
   teekTheme: true,
@@ -7,15 +8,15 @@ export const teekConfig = defineTeekConfig({
   vitePlugins: { permalink: false },
   loading: false,
   homeCardListPosition: "right",
-  author: { name: "日宜房产", link: "https://riyihome.com" },
+  author: { name: "日宜房产", link: PLATFORM_LINKS.home },
   banner: {
     enabled: true,
-    name: "日宜房产博客",
+    name: "日宜房产",
     bgStyle: "pure",
     pureBgColor: "#17352f",
     textColor: "#ffffff",
     descStyle: "default",
-    description: ["在日本安心生活，从看懂房子与城市开始。"],
+    description: ["日本找房，就上日宜。找房服务与实用内容，都在这里。"],
     imgWaves: true,
     features: [
       {
@@ -31,7 +32,7 @@ export const teekConfig = defineTeekConfig({
       {
         title: "查看日宜房源",
         details: "返回日宜房产平台寻找合适房源",
-        link: "https://riyihome.com",
+        link: PLATFORM_LINKS.home,
       },
     ],
   },
@@ -70,9 +71,9 @@ export const teekConfig = defineTeekConfig({
     homeTitle: "热门标签",
   },
   friendLink: { enabled: false },
-  homeCardSort: ["topArticle", "category", "tag", "docAnalysis"],
+  homeCardSort: ["topArticle", "category", "tag"],
   docAnalysis: {
-    enabled: true,
+    enabled: false,
     createTime: "2026-07-28",
     wordCount: true,
     readingTime: true,
@@ -84,7 +85,7 @@ export const teekConfig = defineTeekConfig({
   },
   footerInfo: {
     topMessage: [
-      '<a href="/privacy/">隐私政策</a> · <a href="https://riyihome.com">日宜房产平台</a>',
+      `<a href="/privacy/">隐私政策</a> · <a href="${PLATFORM_LINKS.home}">日宜房产平台</a>`,
     ],
     theme: { show: false },
     copyright: {
