@@ -1,4 +1,4 @@
-import { PLATFORM_URL } from "./site.js";
+import { PLATFORM_LINKS } from "./platform-links.js";
 
 export const NAV_ITEMS = [
   { text: "首页", link: "/" },
@@ -7,5 +7,5 @@ export const NAV_ITEMS = [
   { text: "日本生活", link: "/categories/?category=日本生活" },
   { text: "区域介绍", link: "/categories/?category=区域介绍" },
   { text: "关于日宜", link: "/about/" },
-  { text: "房产平台", link: PLATFORM_URL },
+  { text: "查看房源", link: PLATFORM_LINKS.home },
 ] as const;

@@ -1,6 +1,7 @@
 import { access, readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { NAV_ITEMS } from "../src/navigation.js";
+import { PLATFORM_LINKS } from "../src/platform-links.js";
 import {
   CATEGORIES,
   PLATFORM_URL,
@@ -15,7 +16,21 @@ describe("site contract", () => {
     expect(SITE_URL).toBe("https://www.riyihome.com");
     expect(PLATFORM_URL).toBe("https://riyihome.com");
     expect(SITE_TITLE).toBe("日宜房产");
-    expect(SITE_DESCRIPTION.length).toBeGreaterThan(20);
+    expect(SITE_DESCRIPTION).toContain("日本房产");
+    expect(SITE_DESCRIPTION).toContain("实用内容");
+  });
+
+  it("uses only HTTPS business entry points", () => {
+    expect(PLATFORM_LINKS).toEqual({
+      home: "https://riyihome.com",
+      submitDemand:
+        "https://riyihome.com/index.html#/pages/project/advisory",
+      wechatConsult:
+        "https://work.weixin.qq.com/kfid/kfcc5d6c8170e5733d0",
+    });
+    for (const url of Object.values(PLATFORM_LINKS)) {
+      expect(new URL(url).protocol).toBe("https:");
+    }
   });
 
   it("publishes the approved fixed categories", () => {
@@ -37,7 +52,7 @@ describe("site contract", () => {
       { text: "日本生活", link: "/categories/?category=日本生活" },
       { text: "区域介绍", link: "/categories/?category=区域介绍" },
       { text: "关于日宜", link: "/about/" },
-      { text: "房产平台", link: "https://riyihome.com" },
+      { text: "查看房源", link: PLATFORM_LINKS.home },
     ]);
   });
 
