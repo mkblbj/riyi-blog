@@ -1,11 +1,16 @@
 import { defineTeekConfig } from "vitepress-theme-teek/config";
 import { PLATFORM_LINKS } from "../../src/platform-links.js";
 
+export const teekVitePlugins = {
+  permalink: false,
+  sidebarOption: { ignoreList: ["posts"] },
+};
+
 export const teekConfig = defineTeekConfig({
   teekTheme: true,
   teekHome: true,
   vpHome: false,
-  vitePlugins: { permalink: false },
+  vitePlugins: teekVitePlugins,
   loading: false,
   homeCardListPosition: "right",
   author: { name: "日宜房产", link: PLATFORM_LINKS.home },
@@ -45,6 +50,7 @@ export const teekConfig = defineTeekConfig({
     coverImgMode: "small",
     showCapture: false,
   },
+  breadcrumb: { enabled: false },
   page: { pageSize: 10 },
   blogger: {
     name: "日宜房产",

@@ -10,7 +10,10 @@ import {
   SITE_TITLE,
   SITE_URL,
 } from "../src/site.js";
-import { teekConfig } from "../site/.vitepress/teek-config.js";
+import {
+  teekConfig,
+  teekVitePlugins,
+} from "../site/.vitepress/teek-config.js";
 
 describe("site contract", () => {
   it("keeps the blog and property platform on separate hosts", () => {
@@ -79,6 +82,20 @@ describe("site contract", () => {
     expect(data.description).toBe(SITE_DESCRIPTION);
   });
 
+  it("keeps the official about page free of blog-only navigation", async () => {
+    const source = await readFile("site/about/index.md", "utf8");
+    const { data } = matter(source);
+
+    expect(data).toMatchObject({
+      article: false,
+      articleUpdate: false,
+      lastUpdated: false,
+      next: false,
+      prev: false,
+      sidebar: false,
+    });
+  });
+
   it("does not rewrite native directory article routes on the client", () => {
     const pluginNames = (teekConfig.vite?.plugins ?? [])
       .flat()
@@ -94,6 +111,14 @@ describe("site contract", () => {
     expect(pluginNames).not.toContain(
       "vite-plugin-vitepress-use-permalink",
     );
+  });
+
+  it("keeps generated post folders out of the public sidebar", () => {
+    expect(teekVitePlugins.sidebarOption.ignoreList).toContain("posts");
+  });
+
+  it("does not expose implementation folder names as breadcrumbs", () => {
+    expect(teekConfig.themeConfig?.breadcrumb).toEqual({ enabled: false });
   });
 
   it("selects a Simplified Chinese font before Japanese fallbacks", async () => {

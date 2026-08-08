@@ -2,6 +2,11 @@
 title: 关于日宜
 description: 了解日宜房产的日本房产服务、找房方式与实用内容。
 article: false
+articleUpdate: false
+lastUpdated: false
+next: false
+prev: false
+sidebar: false
 ---
 
 # 关于日宜
