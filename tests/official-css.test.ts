@@ -10,6 +10,10 @@ describe("official site brand CSS", () => {
 
     for (const selector of [
       ".riyi-home-promotion",
+      ".riyi-app-download",
+      ".riyi-app-download__actions",
+      ".riyi-download-action",
+      ".riyi-mini-program-token",
       ".riyi-service-grid",
       ".riyi-advantage-grid",
       ".riyi-action-panel",
@@ -27,7 +31,13 @@ describe("official site brand CSS", () => {
     );
 
     expect(css).toMatch(/\.riyi-action-link[^\n]*:focus-visible/);
+    expect(css).toMatch(
+      /\.riyi-download-action[^\n]*:focus-visible/,
+    );
     expect(css).toContain("@media (max-width: 767px)");
     expect(css).toContain("@media (prefers-reduced-motion: reduce)");
+    expect(css).toMatch(
+      /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.riyi-download-action/,
+    );
   });
 });

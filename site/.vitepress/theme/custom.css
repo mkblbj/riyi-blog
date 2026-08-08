@@ -69,6 +69,121 @@
   margin: 0 auto;
 }
 
+.riyi-app-download {
+  position: relative;
+  display: grid;
+  overflow: hidden;
+  grid-template-columns: minmax(15rem, 0.8fr) minmax(0, 1.4fr);
+  gap: clamp(2rem, 5vw, 4.5rem);
+  align-items: center;
+  margin-bottom: clamp(4.5rem, 8vw, 7rem);
+  padding: clamp(2rem, 5vw, 4rem);
+  border-radius: 1.75rem;
+  background: var(--riyi-forest);
+  box-shadow: 0 28px 70px rgba(16, 42, 37, 0.22);
+  color: #ffffff;
+}
+
+.riyi-app-download::after {
+  position: absolute;
+  right: -5rem;
+  bottom: -8rem;
+  width: 20rem;
+  height: 20rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  content: "";
+  pointer-events: none;
+}
+
+.riyi-app-download__copy,
+.riyi-app-download__actions {
+  position: relative;
+  z-index: 1;
+}
+
+.riyi-app-download .riyi-eyebrow {
+  color: var(--riyi-mint);
+}
+
+.riyi-app-download__copy h2 {
+  margin: 0;
+  color: #ffffff;
+  font-size: clamp(1.75rem, 3.2vw, 2.7rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+.riyi-app-download__copy > p:last-child {
+  margin: 0.85rem 0 0;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.7;
+}
+
+.riyi-app-download__actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.riyi-download-action {
+  display: flex;
+  min-height: 6.5rem;
+  align-items: center;
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    transform 180ms ease;
+}
+
+.riyi-download-action > .tk-icon {
+  flex: 0 0 auto;
+  filter: brightness(0) invert(1);
+}
+
+.riyi-download-action > span {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  margin-left: 0.8rem;
+}
+
+.riyi-download-action strong {
+  font-size: 0.95rem;
+  line-height: 1.35;
+}
+
+.riyi-download-action small {
+  margin-top: 0.3rem;
+  color: inherit;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  opacity: 0.68;
+}
+
+.riyi-mini-program-token {
+  grid-column: 1 / -1;
+  margin: 0.25rem 0 0;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+
+.riyi-mini-program-token code {
+  color: inherit;
+  user-select: all;
+}
+
 .riyi-eyebrow {
   margin: 0 0 0.75rem;
   color: var(--vp-c-brand-1);
@@ -387,6 +502,7 @@
 }
 
 .riyi-text-link:focus-visible,
+.riyi-download-action:focus-visible,
 .riyi-action-link:focus-visible,
 .riyi-article-cta__link:focus-visible {
   outline: 3px solid #6dc2aa;
@@ -405,8 +521,14 @@
   }
 
   .riyi-action-link:hover,
+  .riyi-download-action:hover,
   .riyi-article-cta__link:hover {
     transform: translateY(-2px);
+  }
+
+  .riyi-download-action:hover {
+    border-color: rgba(255, 255, 255, 0.54);
+    background: rgba(255, 255, 255, 0.18);
   }
 
   .riyi-action-link--secondary:hover,
@@ -429,6 +551,7 @@
 }
 
 @media (max-width: 960px) {
+  .riyi-app-download,
   .riyi-advantages,
   .riyi-action-panel {
     grid-template-columns: 1fr;
@@ -449,12 +572,14 @@
   }
 
   .riyi-promotion-intro h2,
+  .riyi-app-download__copy h2,
   .riyi-advantages-heading h2,
   .riyi-action-copy h2 {
     font-size: 1.75rem;
   }
 
   .riyi-service-grid,
+  .riyi-app-download__actions,
   .riyi-advantage-grid,
   .riyi-action-list {
     grid-template-columns: 1fr;
@@ -481,6 +606,16 @@
     border-radius: 1.25rem;
   }
 
+  .riyi-app-download {
+    margin-bottom: 3.75rem;
+    padding: 1.5rem;
+    border-radius: 1.25rem;
+  }
+
+  .riyi-download-action {
+    min-height: 5.25rem;
+  }
+
   .riyi-advantage-card {
     min-height: auto;
   }
@@ -498,12 +633,14 @@
 @media (prefers-reduced-motion: reduce) {
   .riyi-service-card,
   .riyi-text-link span,
+  .riyi-download-action,
   .riyi-action-link,
   .riyi-article-cta__link {
     transition: none;
   }
 
   .riyi-service-card:hover,
+  .riyi-download-action:hover,
   .riyi-action-link:hover,
   .riyi-article-cta__link:hover {
     transform: none;
