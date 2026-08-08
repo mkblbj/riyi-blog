@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AppDownload from "./AppDownload.vue";
 import {
   HOME_ADVANTAGES,
   HOME_SERVICES,
@@ -12,6 +13,8 @@ import {
     aria-labelledby="riyi-services-title"
   >
     <div class="riyi-content-shell">
+      <AppDownload />
+
       <header class="riyi-promotion-intro">
         <p class="riyi-eyebrow">从找房到安居</p>
         <h2 id="riyi-services-title">看懂选择，再决定下一步</h2>
