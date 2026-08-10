@@ -19,9 +19,53 @@ import { applySiteMediaManifest } from "./site-images.js";
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 
-interface StagedOutput {
+export interface StagedOutput {
   stagedPath: string;
   targetPath: string;
+}
+
+export interface PublicationFileSystem {
+  mkdir(path: string, options: { recursive: true }): Promise<unknown>;
+  rename(source: string, target: string): Promise<void>;
+  rm(path: string, options: { recursive: true; force: true }): Promise<void>;
+}
+
+const publicationFileSystem: PublicationFileSystem = { mkdir, rename, rm };
+
+interface RollbackFailure {
+  targetPath: string;
+  operation: "remove published output" | "restore backup";
+  error: unknown;
+}
+
+class PreparedOutputRecoveryRequiredError extends Error {
+  readonly recoveryRoot: string;
+  readonly failingTargets: readonly string[];
+
+  constructor(
+    recoveryRoot: string,
+    publicationError: unknown,
+    rollbackFailures: readonly RollbackFailure[],
+  ) {
+    const failingTargets = [
+      ...new Set(rollbackFailures.map(({ targetPath }) => targetPath)),
+    ];
+    const failureDetails = rollbackFailures
+      .map(({ operation, targetPath }) => `${operation}: ${targetPath}`)
+      .join("; ");
+    super(
+      `prepared output publication failed; recovery required at ${recoveryRoot}; failing targets: ${failingTargets.join(", ")}; rollback errors: ${failureDetails}`,
+      {
+        cause: new AggregateError(
+          [publicationError, ...rollbackFailures.map(({ error }) => error)],
+          "publication and rollback failed",
+        ),
+      },
+    );
+    this.name = "PreparedOutputRecoveryRequiredError";
+    this.recoveryRoot = recoveryRoot;
+    this.failingTargets = failingTargets;
+  }
 }
 
 function isMissingPath(error: unknown): boolean {
@@ -32,9 +76,13 @@ function isMissingPath(error: unknown): boolean {
   );
 }
 
-async function moveIfPresent(source: string, target: string): Promise<boolean> {
+async function moveIfPresent(
+  source: string,
+  target: string,
+  fileSystem: PublicationFileSystem,
+): Promise<boolean> {
   try {
-    await rename(source, target);
+    await fileSystem.rename(source, target);
     return true;
   } catch (error) {
     if (isMissingPath(error)) {
@@ -44,44 +92,76 @@ async function moveIfPresent(source: string, target: string): Promise<boolean> {
   }
 }
 
-async function replaceGeneratedOutputs(
+export async function publishPreparedOutputs(
   outputs: readonly StagedOutput[],
-  backupRoot: string,
+  recoveryRoot: string,
+  fileSystem: PublicationFileSystem = publicationFileSystem,
 ): Promise<void> {
-  await mkdir(backupRoot, { recursive: true });
-  const applied: Array<{
+  const backupRoot = join(recoveryRoot, "backups");
+  await fileSystem.mkdir(backupRoot, { recursive: true });
+  const affected: Array<{
     targetPath: string;
     backupPath: string;
     hadTarget: boolean;
+    published: boolean;
   }> = [];
 
   try {
     for (const [index, output] of outputs.entries()) {
-      await mkdir(dirname(output.targetPath), { recursive: true });
+      await fileSystem.mkdir(dirname(output.targetPath), { recursive: true });
       const backupPath = join(backupRoot, String(index));
-      const hadTarget = await moveIfPresent(output.targetPath, backupPath);
-      try {
-        await rename(output.stagedPath, output.targetPath);
-      } catch (error) {
-        if (hadTarget) {
-          await rename(backupPath, output.targetPath);
-        }
-        throw error;
-      }
-      applied.push({
+      const hadTarget = await moveIfPresent(
+        output.targetPath,
+        backupPath,
+        fileSystem,
+      );
+      const state = {
         targetPath: output.targetPath,
         backupPath,
         hadTarget,
-      });
+        published: false,
+      };
+      affected.push(state);
+      await fileSystem.rename(output.stagedPath, output.targetPath);
+      state.published = true;
     }
-  } catch (error) {
-    for (const output of applied.reverse()) {
-      await rm(output.targetPath, { recursive: true, force: true });
+  } catch (publicationError) {
+    const rollbackFailures: RollbackFailure[] = [];
+    for (const output of affected.reverse()) {
+      if (output.published) {
+        try {
+          await fileSystem.rm(output.targetPath, {
+            recursive: true,
+            force: true,
+          });
+        } catch (error) {
+          rollbackFailures.push({
+            targetPath: output.targetPath,
+            operation: "remove published output",
+            error,
+          });
+        }
+      }
       if (output.hadTarget) {
-        await rename(output.backupPath, output.targetPath);
+        try {
+          await fileSystem.rename(output.backupPath, output.targetPath);
+        } catch (error) {
+          rollbackFailures.push({
+            targetPath: output.targetPath,
+            operation: "restore backup",
+            error,
+          });
+        }
       }
     }
-    throw error;
+    if (rollbackFailures.length > 0) {
+      throw new PreparedOutputRecoveryRequiredError(
+        recoveryRoot,
+        publicationError,
+        rollbackFailures,
+      );
+    }
+    throw publicationError;
   }
 }
 
@@ -102,6 +182,7 @@ export async function prepareContent(
   const stagingRoot = await mkdtemp(
     join(dirname(options.siteDir), ".content-prepare-"),
   );
+  let preserveRecovery = false;
 
   try {
     const stagedSiteDir = join(stagingRoot, "site");
@@ -209,10 +290,15 @@ export async function prepareContent(
       { stagedPath: stagedPostsManifest, targetPath: options.manifestPath },
       { stagedPath: stagedSiteManifest, targetPath: siteManifestPath },
     );
-    await replaceGeneratedOutputs(outputs, join(stagingRoot, "backups"));
+    await publishPreparedOutputs(outputs, stagingRoot);
     return manifest;
+  } catch (error) {
+    preserveRecovery = error instanceof PreparedOutputRecoveryRequiredError;
+    throw error;
   } finally {
-    await rm(stagingRoot, { recursive: true, force: true });
+    if (!preserveRecovery) {
+      await rm(stagingRoot, { recursive: true, force: true });
+    }
   }
 }
 

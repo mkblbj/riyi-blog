@@ -15,7 +15,11 @@ import matter from "gray-matter";
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
 import { stringify } from "yaml";
-import { prepareContent } from "../scripts/content/prepare.js";
+import {
+  prepareContent,
+  publishPreparedOutputs,
+  type PublicationFileSystem,
+} from "../scripts/content/prepare.js";
 import { SiteManifestSchema } from "../src/site-content.js";
 
 const publishedId = "79f45644-f457-4b94-a288-44780fd8f199";
@@ -406,6 +410,90 @@ describe("prepareContent", () => {
     expect(await readdir(root)).not.toEqual(
       expect.arrayContaining([expect.stringMatching(/^\.content-prepare-/)]),
     );
+  });
+
+  it("preserves recovery data and continues rollback after multiple restore failures", async () => {
+    const root = await mkdtemp(join(tmpdir(), "riyi-publication-"));
+    const recoveryRoot = join(root, "recovery");
+    const stagedRoot = join(recoveryRoot, "staged");
+    const targetsRoot = join(root, "live");
+    const names = ["first", "restore-fails", "new-target", "publish-fails"];
+    const outputs = names.map((name) => ({
+      stagedPath: join(stagedRoot, name),
+      targetPath: join(targetsRoot, name),
+    }));
+    await Promise.all(
+      outputs.map(async ({ stagedPath }, index) => {
+        await mkdir(dirname(stagedPath), { recursive: true });
+        await writeFile(stagedPath, `new ${names[index]}`, "utf8");
+      }),
+    );
+    await Promise.all(
+      [0, 1, 3].map(async (index) => {
+        const targetPath = outputs[index]!.targetPath;
+        await mkdir(dirname(targetPath), { recursive: true });
+        await writeFile(targetPath, `old ${names[index]}`, "utf8");
+      }),
+    );
+
+    const restoreFailureTarget = outputs[1]!.targetPath;
+    const removeFailureTarget = outputs[2]!.targetPath;
+    const publicationFailure = outputs[3]!;
+    const fileSystem: PublicationFileSystem = {
+      mkdir,
+      rename: async (source, target) => {
+        if (
+          source === publicationFailure.stagedPath &&
+          target === publicationFailure.targetPath
+        ) {
+          throw new Error("injected publication failure");
+        }
+        if (
+          source === join(recoveryRoot, "backups/1") &&
+          target === restoreFailureTarget
+        ) {
+          throw new Error("injected backup restore failure");
+        }
+        await rename(source, target);
+      },
+      rm: async (path, options) => {
+        if (path === removeFailureTarget) {
+          throw new Error("injected target removal failure");
+        }
+        await rm(path, options);
+      },
+    };
+
+    const error = await publishPreparedOutputs(
+      outputs,
+      recoveryRoot,
+      fileSystem,
+    ).then(
+      () => undefined,
+      (reason: unknown) => reason,
+    );
+
+    expect(error).toBeInstanceOf(Error);
+    expect((error as Error).message).toContain("recovery required");
+    expect((error as Error).message).toContain(recoveryRoot);
+    expect((error as Error).message).toContain(restoreFailureTarget);
+    expect((error as Error).message).toContain(removeFailureTarget);
+    await expect(readFile(outputs[0]!.targetPath, "utf8")).resolves.toBe(
+      "old first",
+    );
+    await expect(access(restoreFailureTarget)).rejects.toMatchObject({
+      code: "ENOENT",
+    });
+    await expect(
+      readFile(join(recoveryRoot, "backups/1"), "utf8"),
+    ).resolves.toBe("old restore-fails");
+    await expect(readFile(removeFailureTarget, "utf8")).resolves.toBe(
+      "new new-target",
+    );
+    await expect(readFile(publicationFailure.targetPath, "utf8")).resolves.toBe(
+      "old publish-fails",
+    );
+    await expect(access(recoveryRoot)).resolves.toBeUndefined();
   });
 
   it("rejects duplicate ids before writing generated content", async () => {
