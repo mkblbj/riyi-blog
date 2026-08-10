@@ -10,6 +10,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import matter from "gray-matter";
 import { describe, expect, it } from "vitest";
+import { parse, stringify } from "yaml";
 import { PLATFORM_LINKS } from "../src/platform-links.js";
 import type { SiteManifest } from "../src/site-content.js";
 import { PLATFORM_URL, SITE_URL } from "../src/site.js";
@@ -71,12 +72,12 @@ describe("site contract", () => {
     const root = await mkdtemp(join(tmpdir(), "riyi-runtime-site-"));
     await cp("content", join(root, "content"), { recursive: true });
     const settingsPath = join(root, "content/site/settings.yml");
-    const settings = await readFile(settingsPath, "utf8");
-    await writeFile(
-      settingsPath,
-      settings.replace('logo: ""', "logo: /site-media/customer-logo.png"),
-      "utf8",
-    );
+    const settings = parse(await readFile(settingsPath, "utf8")) as Record<
+      string,
+      unknown
+    >;
+    settings.logo = "/site-media/customer-logo.png";
+    await writeFile(settingsPath, stringify(settings), "utf8");
     const loadRuntimeSiteManifest = await runtimeManifestLoader();
 
     const manifest = loadRuntimeSiteManifest(root);
@@ -132,7 +133,9 @@ describe("site contract", () => {
       description: site.settings.siteDescription,
     });
     expect(themeConfig).toMatchObject({
-      logo: site.settings.logo || undefined,
+      logo: site.settings.logo
+        ? { src: site.settings.logo, alt: site.settings.siteName }
+        : undefined,
       riyi: site,
     });
     expect(teekTheme.author).toMatchObject({ name: site.settings.siteName });

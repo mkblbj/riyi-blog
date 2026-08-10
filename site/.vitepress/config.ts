@@ -99,7 +99,9 @@ export default defineConfigWithTheme<RiyiThemeConfig>({
   },
   themeConfig: {
     nav: buildNavigation(site),
-    logo: site.settings.logo || undefined,
+    logo: site.settings.logo
+      ? { src: site.settings.logo, alt: site.settings.siteName }
+      : undefined,
     riyi: site,
     search: {
       provider: "local",
