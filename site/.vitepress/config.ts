@@ -8,12 +8,21 @@ import {
 } from "../../src/seo.js";
 import type { ResolvedSiteContent } from "../../src/site-content.js";
 import { SITE_URL } from "../../src/site.js";
+import type { ThemeTokens } from "../../src/theme-colors.js";
 import { runtimeSiteManifest as siteManifest } from "./site-manifest.js";
 import { teekConfig } from "./teek-config.js";
 
 const site = siteManifest.content;
-const tokens = siteManifest.themeTokens;
-const themeCss = `:root{--riyi-primary:${tokens.primary};--riyi-secondary:${tokens.secondary};--riyi-brand-text:${tokens.brandText};--riyi-brand-hover:${tokens.brandHover};--riyi-brand-strong:${tokens.brandStrong};--riyi-brand-soft:${tokens.brandSoft};--riyi-secondary-strong:${tokens.secondaryStrong};--riyi-secondary-muted:${tokens.secondaryMuted};--riyi-on-secondary:${tokens.onSecondary}}.dark{--riyi-brand-text:${tokens.darkBrandText};--riyi-secondary:${tokens.darkSecondary};--riyi-secondary-strong:${tokens.darkSecondaryStrong};--riyi-secondary-muted:${tokens.darkSecondaryMuted}}`;
+
+export function buildThemeCss(tokens: ThemeTokens): string {
+  const onSecondaryFilter =
+    tokens.onSecondary === "#ffffff"
+      ? "brightness(0) invert(1)"
+      : "brightness(0) invert(0.067)";
+  return `:root{--riyi-primary:${tokens.primary};--riyi-secondary:${tokens.secondary};--riyi-brand-text:${tokens.brandText};--riyi-brand-hover:${tokens.brandHover};--riyi-brand-strong:${tokens.brandStrong};--riyi-brand-soft:${tokens.brandSoft};--riyi-secondary-strong:${tokens.secondaryStrong};--riyi-secondary-muted:${tokens.secondaryMuted};--riyi-on-secondary:${tokens.onSecondary};--riyi-on-secondary-filter:${onSecondaryFilter}}.dark{--riyi-brand-text:${tokens.darkBrandText};--riyi-secondary:${tokens.darkSecondary};--riyi-secondary-strong:${tokens.darkSecondaryStrong};--riyi-secondary-muted:${tokens.darkSecondaryMuted}}`;
+}
+
+const themeCss = buildThemeCss(siteManifest.themeTokens);
 
 interface RiyiThemeConfig extends DefaultTheme.Config {
   riyi: ResolvedSiteContent;

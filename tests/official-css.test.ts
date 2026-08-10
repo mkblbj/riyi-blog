@@ -1,7 +1,8 @@
 import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
-import siteConfig from "../site/.vitepress/config.js";
+import siteConfig, * as siteConfigModule from "../site/.vitepress/config.js";
 import { runtimeSiteManifest } from "../site/.vitepress/site-manifest.js";
+import type { ThemeTokens } from "../src/theme-colors.js";
 
 function declarationsFor(
   css: string,
@@ -92,6 +93,7 @@ describe("official site brand CSS", () => {
         runtimeSiteManifest.themeTokens.secondaryStrong,
       "--riyi-secondary-muted": runtimeSiteManifest.themeTokens.secondaryMuted,
       "--riyi-on-secondary": runtimeSiteManifest.themeTokens.onSecondary,
+      "--riyi-on-secondary-filter": "brightness(0) invert(1)",
     });
     expect(declarationsFor(css ?? "", ".dark")).toEqual({
       "--riyi-brand-text": runtimeSiteManifest.themeTokens.darkBrandText,
@@ -134,5 +136,98 @@ describe("official site brand CSS", () => {
         opacity,
       });
     }
+  });
+
+  it("derives branded effects from the editable theme instead of the seeded green palette", async () => {
+    const css = await readFile("site/.vitepress/theme/custom.css", "utf8");
+    const root = declarationsFor(css, ":root");
+    const dark = declarationsFor(css, ".dark");
+    const effects = [
+      [root["--riyi-border"], "--riyi-brand-text"],
+      [root["--riyi-shadow"], "--riyi-secondary-strong"],
+      [dark["--riyi-border"], "--riyi-brand-text"],
+      [
+        declarationsFor(css, ".riyi-home-promotion").background,
+        "--riyi-brand-text",
+      ],
+      [
+        declarationsFor(css, ".riyi-app-download")["box-shadow"],
+        "--riyi-secondary-strong",
+      ],
+      [
+        declarationsFor(css, ".riyi-action-panel")["box-shadow"],
+        "--riyi-secondary-strong",
+      ],
+      [
+        declarationsFor(css, ".riyi-article-cta").background,
+        "--riyi-brand-text",
+      ],
+      [
+        declarationsFor(css, ".riyi-article-cta__link:focus-visible").outline,
+        "--riyi-brand-text",
+      ],
+      [
+        declarationsFor(css, ".riyi-service-card:hover")["border-color"],
+        "--riyi-brand-text",
+      ],
+      [
+        declarationsFor(css, ".riyi-service-card:hover")["box-shadow"],
+        "--riyi-secondary-strong",
+      ],
+    ] as const;
+
+    for (const [effect, token] of effects) {
+      expect(effect).toContain(`var(${token}`);
+      expect(effect).not.toMatch(
+        /rgba\((?:31, 102, 88|20, 55, 48|16, 42, 37),/,
+      );
+    }
+  });
+
+  it("matches image-icon filtering to either allowed secondary foreground", async () => {
+    const css = await readFile("site/.vitepress/theme/custom.css", "utf8");
+    const buildThemeCss = (
+      siteConfigModule as unknown as {
+        buildThemeCss?: (tokens: ThemeTokens) => string;
+      }
+    ).buildThemeCss;
+
+    expect(buildThemeCss).toBeTypeOf("function");
+    const darkForegroundCss = buildThemeCss!({
+      ...runtimeSiteManifest.themeTokens,
+      onSecondary: "#111111",
+    });
+    expect(
+      declarationsFor(darkForegroundCss, ":root")["--riyi-on-secondary-filter"],
+    ).toBe("brightness(0) invert(0.067)");
+    expect(
+      declarationsFor(css, ".riyi-download-action > .tk-icon").filter,
+    ).toBe("var(--riyi-on-secondary-filter, brightness(0) invert(1))");
+  });
+
+  it("uses the secondary foreground for panel decoration without changing neutral surfaces", async () => {
+    const css = await readFile("site/.vitepress/theme/custom.css", "utf8");
+    const panelEffects = [
+      declarationsFor(css, ".riyi-app-download::after").background,
+      declarationsFor(css, ".riyi-download-action").border,
+      declarationsFor(css, ".riyi-download-action").background,
+      declarationsFor(css, ".riyi-action-panel::after").background,
+      declarationsFor(css, ".riyi-action-link").border,
+      declarationsFor(css, ".riyi-action-link--primary")["border-color"],
+      declarationsFor(css, ".riyi-action-link--primary").background,
+      declarationsFor(css, ".riyi-action-link--secondary").background,
+      declarationsFor(css, ".riyi-download-action:hover")["border-color"],
+      declarationsFor(css, ".riyi-download-action:hover").background,
+      declarationsFor(css, ".riyi-action-link--quiet:hover")["border-color"],
+      declarationsFor(css, ".riyi-action-link--quiet:hover").background,
+      declarationsFor(css, ".riyi-action-link:focus-visible").outline,
+    ];
+
+    for (const effect of panelEffects) {
+      expect(effect).toBeTypeOf("string");
+      expect(effect ?? "").toContain("var(--riyi-on-secondary");
+    }
+    expect(declarationsFor(css, ":root")["--riyi-surface"]).toBe("#ffffff");
+    expect(declarationsFor(css, ".dark")["--riyi-surface"]).toBe("#202321");
   });
 });
