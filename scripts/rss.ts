@@ -32,6 +32,7 @@ export async function writeRss(
   feed.addExtension({
     name: "author",
     objects: {
+      _attributes: { xmlns: "http://www.w3.org/2005/Atom" },
       name: { _text: title },
       uri: { _text: url },
     },

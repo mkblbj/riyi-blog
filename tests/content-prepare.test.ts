@@ -1,6 +1,7 @@
 import { mkdtemp, mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { load } from "cheerio";
 import matter from "gray-matter";
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
@@ -258,6 +259,12 @@ describe("prepareContent", () => {
     expect(rss).toContain("<title>日宜房产资讯</title>");
     expect(rss).toContain("<description>日宜房产提供日本房产租赁");
     expect(rss).toContain("<name>日宜房产</name>");
+    const $ = load(rss, { xmlMode: true });
+    const feedAuthor = $("rss > channel > author");
+    expect(feedAuthor).toHaveLength(1);
+    expect(feedAuthor.attr("xmlns")).toBe("http://www.w3.org/2005/Atom");
+    expect(feedAuthor.children("name").text()).toBe("日宜房产");
+    expect(feedAuthor.children("uri").text()).toBe("https://www.riyihome.com");
 
     await expect(
       readFile(join(root, "site/posts", draftId, "index.md"), "utf8"),
