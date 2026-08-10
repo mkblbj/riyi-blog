@@ -4,6 +4,11 @@ import siteConfig, * as siteConfigModule from "../site/.vitepress/config.js";
 import { runtimeSiteManifest } from "../site/.vitepress/site-manifest.js";
 import type { ThemeTokens } from "../src/theme-colors.js";
 
+const iconFilterByForeground: Record<ThemeTokens["onSecondary"], string> = {
+  "#ffffff": "brightness(0) invert(1)",
+  "#111111": "brightness(0) invert(0.067)",
+};
+
 function declarationsFor(
   css: string,
   selector: string,
@@ -79,30 +84,49 @@ describe("official site brand CSS", () => {
       ([tag, attributes]) =>
         tag === "style" && attributes.id === "riyi-theme-tokens",
     );
-    const css = themeStyle?.[2];
+    const runtimeCss = themeStyle?.[2];
+    const buildThemeCss = (
+      siteConfigModule as unknown as {
+        buildThemeCss?: (tokens: ThemeTokens) => string;
+      }
+    ).buildThemeCss;
+    const darkForegroundTokens: ThemeTokens = {
+      ...runtimeSiteManifest.themeTokens,
+      onSecondary: "#111111",
+    };
 
-    expect(css).toBeTypeOf("string");
-    expect(declarationsFor(css ?? "", ":root")).toEqual({
-      "--riyi-primary": runtimeSiteManifest.themeTokens.primary,
-      "--riyi-secondary": runtimeSiteManifest.themeTokens.secondary,
-      "--riyi-brand-text": runtimeSiteManifest.themeTokens.brandText,
-      "--riyi-brand-hover": runtimeSiteManifest.themeTokens.brandHover,
-      "--riyi-brand-strong": runtimeSiteManifest.themeTokens.brandStrong,
-      "--riyi-brand-soft": runtimeSiteManifest.themeTokens.brandSoft,
-      "--riyi-secondary-strong":
-        runtimeSiteManifest.themeTokens.secondaryStrong,
-      "--riyi-secondary-muted": runtimeSiteManifest.themeTokens.secondaryMuted,
-      "--riyi-on-secondary": runtimeSiteManifest.themeTokens.onSecondary,
-      "--riyi-on-secondary-filter": "brightness(0) invert(1)",
-    });
-    expect(declarationsFor(css ?? "", ".dark")).toEqual({
-      "--riyi-brand-text": runtimeSiteManifest.themeTokens.darkBrandText,
-      "--riyi-secondary": runtimeSiteManifest.themeTokens.darkSecondary,
-      "--riyi-secondary-strong":
-        runtimeSiteManifest.themeTokens.darkSecondaryStrong,
-      "--riyi-secondary-muted":
-        runtimeSiteManifest.themeTokens.darkSecondaryMuted,
-    });
+    expect(runtimeCss).toBeTypeOf("string");
+    expect(buildThemeCss).toBeTypeOf("function");
+    for (const { css, tokens } of [
+      {
+        css: runtimeCss ?? "",
+        tokens: runtimeSiteManifest.themeTokens,
+      },
+      {
+        css: buildThemeCss!(darkForegroundTokens),
+        tokens: darkForegroundTokens,
+      },
+    ]) {
+      expect(declarationsFor(css, ":root")).toEqual({
+        "--riyi-primary": tokens.primary,
+        "--riyi-secondary": tokens.secondary,
+        "--riyi-brand-text": tokens.brandText,
+        "--riyi-brand-hover": tokens.brandHover,
+        "--riyi-brand-strong": tokens.brandStrong,
+        "--riyi-brand-soft": tokens.brandSoft,
+        "--riyi-secondary-strong": tokens.secondaryStrong,
+        "--riyi-secondary-muted": tokens.secondaryMuted,
+        "--riyi-on-secondary": tokens.onSecondary,
+        "--riyi-on-secondary-filter":
+          iconFilterByForeground[tokens.onSecondary],
+      });
+      expect(declarationsFor(css, ".dark")).toEqual({
+        "--riyi-brand-text": tokens.darkBrandText,
+        "--riyi-secondary": tokens.darkSecondary,
+        "--riyi-secondary-strong": tokens.darkSecondaryStrong,
+        "--riyi-secondary-muted": tokens.darkSecondaryMuted,
+      });
+    }
   });
 
   it("consumes theme variables with visual defaults", async () => {
