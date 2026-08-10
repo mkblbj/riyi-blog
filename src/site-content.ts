@@ -4,10 +4,9 @@ import { ThemeTokensSchema } from "./theme-colors.js";
 const uuid = z.uuid();
 const shortText = z.string().trim().min(1).max(120);
 const longText = z.string().trim().min(1).max(500);
-const optionalSiteImage = z.union([
-  z.literal(""),
-  z.string().regex(/^\/site-media\/[^\s]+$/),
-]);
+const optionalSiteImage = z
+  .union([z.literal(""), z.string().regex(/^\/site-media\/[^\s]+$/)])
+  .default("");
 const hexColor = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 const httpsUrl = z
   .url()

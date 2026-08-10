@@ -2,6 +2,7 @@ hero:
   title: 日宜房产
   description: 日本找房，就上日宜。找房服务与实用内容，都在这里。
   image: /site-media/msn99brt-6xyayor5.png
+  imageAlt: MODS LOCKER 篮球与储物柜图标
   quickLinks:
     - id: rent
       enabled: true

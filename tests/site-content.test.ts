@@ -5,6 +5,8 @@ import { stringify } from "yaml";
 import { describe, expect, it } from "vitest";
 
 import {
+  HomeContentSchema,
+  SiteSettingsSchema,
   resolveLinkTarget,
   resolveSiteContent,
   validatePostCategoryReferences,
@@ -262,6 +264,26 @@ async function siteFixture(options: { disableRent?: boolean } = {}) {
 }
 
 describe("site content", () => {
+  it("treats omitted optional site images as unset", () => {
+    const { logo: _logo, ...settingsWithoutLogo } = settings;
+    const { image: _heroImage, ...heroWithoutImage } = home.hero;
+    const servicesWithoutImages = home.services.items.map(
+      ({ image: _image, ...service }) => service,
+    );
+
+    expect(SiteSettingsSchema.parse(settingsWithoutLogo).logo).toBe("");
+    expect(
+      HomeContentSchema.parse({
+        ...home,
+        hero: heroWithoutImage,
+        services: { ...home.services, items: servicesWithoutImages },
+      }),
+    ).toMatchObject({
+      hero: { image: "" },
+      services: { items: [{ image: "" }, { image: "" }, { image: "" }] },
+    });
+  });
+
   it("loads categories with stored slugs and UUID slug fallbacks", async () => {
     const root = await siteFixture();
     const content = loadSiteContent(join(root, "content"));
