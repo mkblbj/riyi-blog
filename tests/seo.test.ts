@@ -26,7 +26,10 @@ describe("SEO", () => {
     const head = buildPageHead({
       relativePath: "posts/79f45644-f457-4b94-a288-44780fd8f199/index.md",
       title: "欢迎来到日宜房产博客",
-      description: "日宜房产博客的首篇介绍文章。",
+      siteTitle: "日宜住居",
+      siteDescription: "日宜住居提供经过编辑的官网说明内容。",
+      siteUrl: "https://www.riyihome.com",
+      logo: "/site-media/customer-logo.0123456789ab.webp",
       frontmatter: {
         id: "79f45644-f457-4b94-a288-44780fd8f199",
         article: true,
@@ -46,6 +49,17 @@ describe("SEO", () => {
       "meta",
       { property: "og:type", content: "article" },
     ]);
+    expect(head).toContainEqual([
+      "meta",
+      { property: "og:site_name", content: "日宜住居" },
+    ]);
+    expect(head).toContainEqual([
+      "meta",
+      {
+        name: "description",
+        content: "日宜住居提供经过编辑的官网说明内容。",
+      },
+    ]);
     const jsonLd = head.find(
       (entry) =>
         entry[0] === "script" &&
@@ -56,6 +70,14 @@ describe("SEO", () => {
       "@type": "BlogPosting",
       headline: "欢迎来到日宜房产博客",
       author: { "@type": "Organization", name: "日宜房产" },
+      publisher: {
+        "@type": "Organization",
+        name: "日宜住居",
+        logo: {
+          "@type": "ImageObject",
+          url: "https://www.riyihome.com/site-media/customer-logo.0123456789ab.webp",
+        },
+      },
     });
   });
 
@@ -73,7 +95,7 @@ describe("SEO", () => {
     ).toEqual([{ url: "about/" }, { url: "posts/article/" }]);
   });
 
-  it("writes RSS containing only manifest posts", async () => {
+  it("writes RSS with CMS identity and only manifest posts", async () => {
     const root = await mkdtemp(join(tmpdir(), "riyi-rss-"));
     const manifest: BuildManifest = {
       generatedAt: "2026-07-28T03:00:00.000Z",
@@ -98,17 +120,26 @@ describe("SEO", () => {
     };
     const output = join(root, "rss.xml");
     await writeRss(manifest, output, {
-      title: "日宜房产",
-      description:
-        "日宜房产提供日本房产租赁、买卖与安居服务，并整理区域选择、流程费用和日常生活的实用内容。",
-      logo: "",
+      title: "日宜住居",
+      description: "日宜住居提供经过编辑的官网说明内容。",
+      logo: "/site-media/customer-logo.0123456789ab.webp",
       url: "https://www.riyihome.com",
     });
     const xml = await readFile(output, "utf8");
     expect(xml).toContain(
       "https://www.riyihome.com/posts/79f45644-f457-4b94-a288-44780fd8f199/",
     );
-    expect(xml).toContain("<title>日宜房产资讯</title>");
+    expect(xml).toContain("<title>日宜住居资讯</title>");
+    expect(xml).toContain(
+      "<description>日宜住居提供经过编辑的官网说明内容。</description>",
+    );
+    expect(xml).toContain(
+      "https://www.riyihome.com/site-media/customer-logo.0123456789ab.webp",
+    );
+    expect(xml).toContain(
+      `<copyright>© ${new Date().getFullYear()} 日宜住居</copyright>`,
+    );
+    expect(xml).toContain("<name>日宜住居</name>");
     expect(xml).not.toContain("<title>日宜房产博客</title>");
     expect(xml).toContain("欢迎来到日宜房产博客");
     expect(xml).not.toContain("draft");

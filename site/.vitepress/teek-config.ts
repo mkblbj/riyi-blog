@@ -1,5 +1,15 @@
 import { defineTeekConfig } from "vitepress-theme-teek/config";
 import { PLATFORM_LINKS } from "../../src/platform-links.js";
+import { runtimeSiteManifest as siteManifest } from "./site-manifest.js";
+
+const site = siteManifest.content;
+const hero = site.home.hero;
+const bannerBackground = hero.image
+  ? { bgStyle: "partImg" as const, imgSrc: hero.image }
+  : {
+      bgStyle: "pure" as const,
+      pureBgColor: site.settings.secondaryColor,
+    };
 
 export const teekVitePlugins = {
   permalink: false,
@@ -13,33 +23,23 @@ export const teekConfig = defineTeekConfig({
   vitePlugins: teekVitePlugins,
   loading: false,
   homeCardListPosition: "right",
-  author: { name: "日宜房产", link: PLATFORM_LINKS.home },
+  author: { name: site.settings.siteName, link: PLATFORM_LINKS.home },
   banner: {
     enabled: true,
-    name: "日宜房产",
-    bgStyle: "pure",
-    pureBgColor: "#17352f",
-    textColor: "#ffffff",
+    name: hero.title,
+    ...bannerBackground,
+    textColor: siteManifest.themeTokens.onSecondary,
     descStyle: "default",
-    description: ["日本找房，就上日宜。找房服务与实用内容，都在这里。"],
+    description: [hero.description],
     imgWaves: true,
-    features: [
-      {
-        title: "租房指南",
-        details: "理解费用、审查与签约流程",
-        link: "/categories/?category=租房指南",
-      },
-      {
-        title: "买房指南",
-        details: "整理购房、贷款与持有成本",
-        link: "/categories/?category=买房指南",
-      },
-      {
-        title: "查看日宜房源",
-        details: "返回日宜房产平台寻找合适房源",
-        link: PLATFORM_LINKS.home,
-      },
-    ],
+    features: hero.quickLinks
+      .filter(({ enabled }) => enabled)
+      .sort((left, right) => left.order - right.order)
+      .map(({ title, description, href }) => ({
+        title,
+        details: description,
+        link: href,
+      })),
   },
   post: {
     postStyle: "list",
@@ -53,9 +53,9 @@ export const teekConfig = defineTeekConfig({
   breadcrumb: { enabled: false },
   page: { pageSize: 10 },
   blogger: {
-    name: "日宜房产",
-    slogan: "分享日本租房、买房、区域选择与生活信息。",
-    avatar: "/brand/og-default.png",
+    name: site.settings.siteName,
+    slogan: site.settings.siteDescription,
+    avatar: site.settings.logo || "/brand/og-default.png",
     shape: "square",
   },
   topArticle: {
@@ -97,7 +97,7 @@ export const teekConfig = defineTeekConfig({
     copyright: {
       show: true,
       createYear: 2026,
-      suffix: "日宜房产",
+      suffix: site.settings.siteName,
     },
   },
 });

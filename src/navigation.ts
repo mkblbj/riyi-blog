@@ -1,11 +1,26 @@
-import { PLATFORM_LINKS } from "./platform-links.js";
+import type { DefaultTheme } from "vitepress";
+import type {
+  ResolvedNavigationItem,
+  ResolvedSiteContent,
+} from "./site-content.js";
 
-export const NAV_ITEMS = [
-  { text: "首页", link: "/" },
-  { text: "租房指南", link: "/categories/?category=租房指南" },
-  { text: "买房指南", link: "/categories/?category=买房指南" },
-  { text: "日本生活", link: "/categories/?category=日本生活" },
-  { text: "区域介绍", link: "/categories/?category=区域介绍" },
-  { text: "关于日宜", link: "/about/" },
-  { text: "查看房源", link: PLATFORM_LINKS.home },
-] as const;
+function toNavItem(item: ResolvedNavigationItem): DefaultTheme.NavItemWithLink {
+  const link = { text: item.label, link: item.href };
+  if (item.external && item.newWindow) {
+    return { ...link, target: "_blank", rel: "noreferrer" };
+  }
+  return link;
+}
+
+export function buildNavigation(
+  content: ResolvedSiteContent,
+  primaryLimit = 6,
+): DefaultTheme.NavItem[] {
+  const items = content.navigation.items.map(toNavItem);
+  if (items.length <= primaryLimit) return items;
+
+  return [
+    ...items.slice(0, primaryLimit),
+    { text: "更多", items: items.slice(primaryLimit) },
+  ];
+}

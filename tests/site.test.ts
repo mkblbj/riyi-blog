@@ -1,23 +1,39 @@
-import { access, readFile } from "node:fs/promises";
+import { readFileSync } from "node:fs";
+import {
+  access,
+  cp,
+  mkdir,
+  mkdtemp,
+  readFile,
+  writeFile,
+} from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import matter from "gray-matter";
 import { describe, expect, it } from "vitest";
-import { NAV_ITEMS } from "../src/navigation.js";
 import { PLATFORM_LINKS } from "../src/platform-links.js";
-import {
-  PLATFORM_URL,
-  SITE_DESCRIPTION,
-  SITE_TITLE,
-  SITE_URL,
-} from "../src/site.js";
+import { SiteManifestSchema, type SiteManifest } from "../src/site-content.js";
+import { PLATFORM_URL, SITE_URL } from "../src/site.js";
+import siteConfig from "../site/.vitepress/config.js";
 import { teekConfig, teekVitePlugins } from "../site/.vitepress/teek-config.js";
+
+const runtimeManifest = SiteManifestSchema.parse(
+  JSON.parse(readFileSync(".generated/site.json", "utf8")),
+);
+
+async function runtimeManifestLoader() {
+  const manifestModule =
+    (await import("../site/.vitepress/site-manifest.js")) as {
+      loadRuntimeSiteManifest?: (projectRoot?: string) => SiteManifest;
+    };
+  expect(manifestModule.loadRuntimeSiteManifest).toBeTypeOf("function");
+  return manifestModule.loadRuntimeSiteManifest!;
+}
 
 describe("site contract", () => {
   it("keeps the blog and property platform on separate hosts", () => {
     expect(SITE_URL).toBe("https://www.riyihome.com");
     expect(PLATFORM_URL).toBe("https://riyihome.com");
-    expect(SITE_TITLE).toBe("日宜房产");
-    expect(SITE_DESCRIPTION).toContain("日本房产");
-    expect(SITE_DESCRIPTION).toContain("实用内容");
   });
 
   it("uses only HTTPS business entry points", () => {
@@ -31,16 +47,110 @@ describe("site contract", () => {
     }
   });
 
-  it("uses the approved public navigation", () => {
-    expect(NAV_ITEMS).toEqual([
-      { text: "首页", link: "/" },
-      { text: "租房指南", link: "/categories/?category=租房指南" },
-      { text: "买房指南", link: "/categories/?category=买房指南" },
-      { text: "日本生活", link: "/categories/?category=日本生活" },
-      { text: "区域介绍", link: "/categories/?category=区域介绍" },
-      { text: "关于日宜", link: "/about/" },
-      { text: "查看房源", link: PLATFORM_LINKS.home },
-    ]);
+  it("loads the generated runtime manifest before source content", async () => {
+    const loadRuntimeSiteManifest = await runtimeManifestLoader();
+
+    expect(loadRuntimeSiteManifest()).toEqual(runtimeManifest);
+  });
+
+  it("falls back to source YAML only when the generated manifest is absent", async () => {
+    const root = await mkdtemp(join(tmpdir(), "riyi-runtime-site-"));
+    await cp("content", join(root, "content"), { recursive: true });
+    const settingsPath = join(root, "content/site/settings.yml");
+    const settings = await readFile(settingsPath, "utf8");
+    await writeFile(
+      settingsPath,
+      settings.replace('logo: ""', "logo: /site-media/customer-logo.png"),
+      "utf8",
+    );
+    const loadRuntimeSiteManifest = await runtimeManifestLoader();
+
+    const manifest = loadRuntimeSiteManifest(root);
+
+    expect(manifest.content.settings.logo).toBe(
+      "/site-media/customer-logo.png",
+    );
+    expect(manifest.themeTokens).toMatchObject({
+      primary: "#1f6658",
+      secondary: "#17352f",
+    });
+  });
+
+  it("reports the generated manifest path instead of masking invalid JSON", async () => {
+    const root = await mkdtemp(join(tmpdir(), "riyi-runtime-site-"));
+    const generatedDir = join(root, ".generated");
+    const manifestPath = join(generatedDir, "site.json");
+    await mkdir(generatedDir, { recursive: true });
+    await writeFile(manifestPath, "{ invalid json", "utf8");
+    const loadRuntimeSiteManifest = await runtimeManifestLoader();
+
+    expect(() => loadRuntimeSiteManifest(root)).toThrow(manifestPath);
+  });
+
+  it("reports the generated manifest path for non-ENOENT read failures", async () => {
+    const root = await mkdtemp(join(tmpdir(), "riyi-runtime-site-"));
+    const manifestPath = join(root, ".generated/site.json");
+    await mkdir(manifestPath, { recursive: true });
+    const loadRuntimeSiteManifest = await runtimeManifestLoader();
+
+    expect(() => loadRuntimeSiteManifest(root)).toThrow(manifestPath);
+  });
+
+  it("projects runtime identity and content into VitePress and Teek", () => {
+    const site = runtimeManifest.content;
+    const themeConfig = siteConfig.themeConfig as unknown as Record<
+      string,
+      unknown
+    >;
+    const teekTheme = teekConfig.themeConfig as Record<string, any>;
+    const expectedFeatures = site.home.hero.quickLinks
+      .filter(({ enabled }) => enabled)
+      .sort((left, right) => left.order - right.order)
+      .map(({ title, description, href }) => ({
+        title,
+        details: description,
+        link: href,
+      }));
+
+    expect(siteConfig).toMatchObject({
+      title: site.settings.siteName,
+      titleTemplate: `:title｜${site.settings.siteName}`,
+      description: site.settings.siteDescription,
+    });
+    expect(themeConfig).toMatchObject({
+      logo: site.settings.logo || undefined,
+      riyi: site,
+    });
+    expect(teekTheme.author).toMatchObject({ name: site.settings.siteName });
+    expect(teekTheme.blogger).toMatchObject({
+      name: site.settings.siteName,
+      slogan: site.settings.siteDescription,
+      avatar: site.settings.logo || "/brand/og-default.png",
+    });
+    expect(teekTheme.banner).toMatchObject({
+      name: site.home.hero.title,
+      bgStyle: site.home.hero.image ? "partImg" : "pure",
+      pureBgColor: site.settings.secondaryColor,
+      textColor: runtimeManifest.themeTokens.onSecondary,
+      description: [site.home.hero.description],
+      features: expectedFeatures,
+    });
+    expect(teekTheme.footerInfo.copyright.suffix).toBe(site.settings.siteName);
+  });
+
+  it("overrides stale homepage frontmatter with runtime identity", async () => {
+    const pageData = {
+      relativePath: "index.md",
+      title: "旧首页标题",
+      frontmatter: { description: "旧首页说明" },
+    };
+
+    await siteConfig.transformPageData?.(pageData as never, {} as never);
+
+    expect(pageData.title).toBe(runtimeManifest.content.settings.siteName);
+    expect(pageData.frontmatter.description).toBe(
+      runtimeManifest.content.settings.siteDescription,
+    );
   });
 
   it("contains every required fixed page", async () => {
@@ -61,8 +171,10 @@ describe("site contract", () => {
     const source = await readFile("site/index.md", "utf8");
     const { data } = matter(source);
 
-    expect(data.title).toBe(SITE_TITLE);
-    expect(data.description).toBe(SITE_DESCRIPTION);
+    expect(data.title).toBe(runtimeManifest.content.settings.siteName);
+    expect(data.description).toBe(
+      runtimeManifest.content.settings.siteDescription,
+    );
   });
 
   it("keeps the official about page free of blog-only navigation", async () => {

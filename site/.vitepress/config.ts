@@ -1,22 +1,30 @@
-import { defineConfig } from "vitepress";
+import { defineConfigWithTheme, type DefaultTheme } from "vitepress";
 import { teekCssPlugin } from "../../scripts/vite/teek-css.js";
-import { NAV_ITEMS } from "../../src/navigation.js";
+import { buildNavigation } from "../../src/navigation.js";
 import {
   buildGlobalHead,
   buildPageHead,
   filterPublicSitemapItems,
 } from "../../src/seo.js";
-import { SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from "../../src/site.js";
+import type { ResolvedSiteContent } from "../../src/site-content.js";
+import { SITE_URL } from "../../src/site.js";
+import { runtimeSiteManifest as siteManifest } from "./site-manifest.js";
 import { teekConfig } from "./teek-config.js";
 
-export default defineConfig({
+const site = siteManifest.content;
+
+interface RiyiThemeConfig extends DefaultTheme.Config {
+  riyi: ResolvedSiteContent;
+}
+
+export default defineConfigWithTheme<RiyiThemeConfig>({
   extends: teekConfig,
   vite: {
     plugins: [teekCssPlugin()],
   },
-  title: SITE_TITLE,
-  titleTemplate: `:title｜${SITE_TITLE}`,
-  description: SITE_DESCRIPTION,
+  title: site.settings.siteName,
+  titleTemplate: `:title｜${site.settings.siteName}`,
+  description: site.settings.siteDescription,
   lang: "zh-CN",
   cleanUrls: false,
   lastUpdated: true,
@@ -27,7 +35,7 @@ export default defineConfig({
       {
         rel: "alternate",
         type: "application/rss+xml",
-        title: `${SITE_TITLE}资讯 RSS`,
+        title: `${site.settings.siteName}资讯 RSS`,
         href: "/rss.xml",
       },
     ],
@@ -48,13 +56,21 @@ export default defineConfig({
     transformItems: filterPublicSitemapItems,
   },
   transformPageData(pageData) {
+    if (pageData.relativePath === "index.md") {
+      pageData.title = site.settings.siteName;
+      pageData.frontmatter.description = site.settings.siteDescription;
+    }
     const pageHead = buildPageHead({
       relativePath: pageData.relativePath,
       title: pageData.title,
       description:
         typeof pageData.frontmatter.description === "string"
           ? pageData.frontmatter.description
-          : SITE_DESCRIPTION,
+          : site.settings.siteDescription,
+      siteTitle: site.settings.siteName,
+      siteDescription: site.settings.siteDescription,
+      siteUrl: SITE_URL,
+      logo: site.settings.logo,
       frontmatter: pageData.frontmatter,
     });
     pageData.frontmatter.head = [
@@ -63,7 +79,9 @@ export default defineConfig({
     ];
   },
   themeConfig: {
-    nav: [...NAV_ITEMS],
+    nav: buildNavigation(site),
+    logo: site.settings.logo || undefined,
+    riyi: site,
     search: {
       provider: "local",
       options: {

@@ -1,10 +1,13 @@
 import type { HeadConfig } from "vitepress";
-import { SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from "./site.js";
 
 export interface PageHeadInput {
   relativePath: string;
   title: string;
   description?: string;
+  siteTitle: string;
+  siteDescription: string;
+  siteUrl: string;
+  logo: string;
   frontmatter: Record<string, unknown>;
 }
 
@@ -22,27 +25,32 @@ export function filterPublicSitemapItems<T extends { url: string }>(
   return items.filter((item) => item.url !== "404.html");
 }
 
-function absolute(value: string): string {
-  return new URL(value, SITE_URL).toString();
+function absolute(value: string, siteUrl: string): string {
+  return new URL(value, siteUrl).toString();
 }
 
 export function buildPageHead(input: PageHeadInput): HeadConfig[] {
   const route = routeFromRelativePath(input.relativePath);
-  const canonical = absolute(route);
-  const description = input.description || SITE_DESCRIPTION;
+  const canonical = absolute(route, input.siteUrl);
+  const description = input.description || input.siteDescription;
   const isArticle = input.frontmatter.article === true;
+  const fallbackImage = input.logo || "/brand/og-default.png";
   const image = absolute(
     typeof input.frontmatter.coverImg === "string"
       ? input.frontmatter.coverImg
-      : "/brand/og-default.png",
+      : fallbackImage,
+    input.siteUrl,
   );
   const head: HeadConfig[] = [
     ["link", { rel: "canonical", href: canonical }],
     ["meta", { name: "description", content: description }],
     ["meta", { property: "og:locale", content: "zh_CN" }],
-    ["meta", { property: "og:site_name", content: SITE_TITLE }],
-    ["meta", { property: "og:type", content: isArticle ? "article" : "website" }],
-    ["meta", { property: "og:title", content: input.title || SITE_TITLE }],
+    ["meta", { property: "og:site_name", content: input.siteTitle }],
+    [
+      "meta",
+      { property: "og:type", content: isArticle ? "article" : "website" },
+    ],
+    ["meta", { property: "og:title", content: input.title || input.siteTitle }],
     ["meta", { property: "og:description", content: description }],
     ["meta", { property: "og:url", content: canonical }],
     ["meta", { property: "og:image", content: image }],
@@ -58,7 +66,7 @@ export function buildPageHead(input: PageHeadInput): HeadConfig[] {
       input.frontmatter.author !== null &&
       "name" in input.frontmatter.author
         ? String(input.frontmatter.author.name)
-        : SITE_TITLE;
+        : input.siteTitle;
     const jsonLd = {
       "@context": "https://schema.org",
       "@type": "BlogPosting",
@@ -71,10 +79,10 @@ export function buildPageHead(input: PageHeadInput): HeadConfig[] {
       author: { "@type": "Organization", name: author },
       publisher: {
         "@type": "Organization",
-        name: SITE_TITLE,
+        name: input.siteTitle,
         logo: {
           "@type": "ImageObject",
-          url: absolute("/brand/og-default.png"),
+          url: absolute(fallbackImage, input.siteUrl),
         },
       },
     };
