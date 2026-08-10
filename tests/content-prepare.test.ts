@@ -2,12 +2,14 @@ import {
   access,
   mkdtemp,
   mkdir,
+  readdir,
   readFile,
   rename,
+  rm,
   writeFile,
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { load } from "cheerio";
 import matter from "gray-matter";
 import sharp from "sharp";
@@ -364,6 +366,46 @@ describe("prepareContent", () => {
     await expect(
       access(join(root, "site/public/site-media")),
     ).rejects.toMatchObject({ code: "ENOENT" });
+  });
+
+  it("preserves every previous output when a late site image check fails", async () => {
+    const root = await fixture({ siteImages: true });
+    await rm(join(root, "content/site-media/hero.png"));
+    const sentinels = new Map([
+      [join(root, "site/posts/old/index.md"), "old post"],
+      [join(root, "site/category/old/index.md"), "old category"],
+      [join(root, "site/categories/index.md"), "tracked category index"],
+      [join(root, "site/public/media/old.webp"), "old article media"],
+      [join(root, "site/public/site-media/old.webp"), "old site media"],
+      [join(root, "site/public/rss.xml"), "old rss"],
+      [join(root, ".generated/posts.json"), "old posts manifest"],
+      [join(root, ".generated/site.json"), "old site manifest"],
+    ]);
+    await Promise.all(
+      [...sentinels].map(async ([path, value]) => {
+        await mkdir(dirname(path), { recursive: true });
+        await writeFile(path, value, "utf8");
+      }),
+    );
+
+    await expect(
+      prepareContent({
+        contentDir: join(root, "content"),
+        siteDir: join(root, "site"),
+        manifestPath: join(root, ".generated/posts.json"),
+      }),
+    ).rejects.toThrow(
+      "content/site/home.yml: missing site image /site-media/hero.png",
+    );
+
+    await Promise.all(
+      [...sentinels].map(async ([path, value]) => {
+        await expect(readFile(path, "utf8")).resolves.toBe(value);
+      }),
+    );
+    expect(await readdir(root)).not.toEqual(
+      expect.arrayContaining([expect.stringMatching(/^\.content-prepare-/)]),
+    );
   });
 
   it("rejects duplicate ids before writing generated content", async () => {

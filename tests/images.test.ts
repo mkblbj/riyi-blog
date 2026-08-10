@@ -53,15 +53,43 @@ describe("image pipeline", () => {
       .png()
       .toFile(join(input, "hero.png"));
 
-    const manifest = await optimizeMedia(input, output, "site-media/");
-
-    expect(manifest.paths.get("/site-media/hero.png")).toMatch(
-      /^\/site-media\/hero\.[a-f0-9]{12}\.webp$/,
-    );
-    expect(manifest.files[0]?.publicPath).toMatch(
-      /^\/site-media\/hero\.[a-f0-9]{12}\.webp$/,
-    );
+    for (const [prefix, normalized] of [
+      ["/media", "/media"],
+      ["media/", "/media"],
+      ["/site-media/", "/site-media"],
+    ] as const) {
+      const manifest = await optimizeMedia(input, output, prefix);
+      expect(manifest.paths.get(`${normalized}/hero.png`)).toMatch(
+        new RegExp(`^${normalized}/hero\\.[a-f0-9]{12}\\.webp$`),
+      );
+      expect(manifest.files[0]?.publicPath).toMatch(
+        new RegExp(`^${normalized}/hero\\.[a-f0-9]{12}\\.webp$`),
+      );
+    }
   });
+
+  it.each(["", " ", "/", "../media", "media//nested", "media?query"])(
+    "rejects the unsafe public prefix %j",
+    async (publicPrefix) => {
+      const root = await mkdtemp(join(tmpdir(), "riyi-prefix-"));
+      const input = join(root, "input");
+      await mkdir(input, { recursive: true });
+      await sharp({
+        create: {
+          width: 80,
+          height: 45,
+          channels: 3,
+          background: "#d7c3a4",
+        },
+      })
+        .png()
+        .toFile(join(input, "hero.png"));
+
+      await expect(
+        optimizeMedia(input, join(root, "output"), publicPrefix),
+      ).rejects.toThrow("invalid public media prefix");
+    },
+  );
 
   it("rewrites cover and Markdown paths from the generated map", () => {
     const paths = new Map([

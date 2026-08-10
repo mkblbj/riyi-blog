@@ -23,12 +23,31 @@ function toPosix(value: string): string {
   return value.split(sep).join("/");
 }
 
+function normalizePublicPrefix(publicPrefix: string): string {
+  const value = publicPrefix.replace(/^\/+|\/+$/g, "");
+  const segments = value.split("/");
+  if (
+    !value ||
+    publicPrefix.trim() !== publicPrefix ||
+    segments.some(
+      (segment) =>
+        !segment ||
+        segment === "." ||
+        segment === ".." ||
+        !/^[a-zA-Z0-9._~-]+$/.test(segment),
+    )
+  ) {
+    throw new Error(`invalid public media prefix "${publicPrefix}"`);
+  }
+  return `/${segments.join("/")}`;
+}
+
 export async function optimizeMedia(
   inputDir: string,
   outputDir: string,
   publicPrefix = "/media",
 ): Promise<MediaManifest> {
-  const normalizedPublicPrefix = `/${publicPrefix.replace(/^\/+|\/+$/g, "")}`;
+  const normalizedPublicPrefix = normalizePublicPrefix(publicPrefix);
   await rm(outputDir, { recursive: true, force: true });
   await mkdir(outputDir, { recursive: true });
   const sourceFiles = await glob(`**/*.{${IMAGE_EXTENSIONS.join(",")}}`, {
