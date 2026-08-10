@@ -1,5 +1,32 @@
 import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
+import siteConfig from "../site/.vitepress/config.js";
+import { runtimeSiteManifest } from "../site/.vitepress/site-manifest.js";
+
+function declarationsFor(
+  css: string,
+  selector: string,
+): Record<string, string> {
+  const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const body = css.match(
+    new RegExp(`${escapedSelector}\\s*\\{([^}]*)\\}`),
+  )?.[1];
+  if (!body) return {};
+
+  return Object.fromEntries(
+    body
+      .split(";")
+      .map((declaration) => declaration.trim())
+      .filter(Boolean)
+      .map((declaration) => {
+        const separator = declaration.indexOf(":");
+        return [
+          declaration.slice(0, separator).trim(),
+          declaration.slice(separator + 1).trim(),
+        ];
+      }),
+  );
+}
 
 describe("official site brand CSS", () => {
   it("styles every official-site section", async () => {
@@ -44,5 +71,68 @@ describe("official site brand CSS", () => {
     expect(css).toMatch(
       /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.riyi-download-action/,
     );
+  });
+
+  it("projects every derived theme token into the global inline style", () => {
+    const themeStyle = siteConfig.head?.find(
+      ([tag, attributes]) =>
+        tag === "style" && attributes.id === "riyi-theme-tokens",
+    );
+    const css = themeStyle?.[2];
+
+    expect(css).toBeTypeOf("string");
+    expect(declarationsFor(css ?? "", ":root")).toEqual({
+      "--riyi-primary": runtimeSiteManifest.themeTokens.primary,
+      "--riyi-secondary": runtimeSiteManifest.themeTokens.secondary,
+      "--riyi-brand-text": runtimeSiteManifest.themeTokens.brandText,
+      "--riyi-brand-hover": runtimeSiteManifest.themeTokens.brandHover,
+      "--riyi-brand-strong": runtimeSiteManifest.themeTokens.brandStrong,
+      "--riyi-brand-soft": runtimeSiteManifest.themeTokens.brandSoft,
+      "--riyi-secondary-strong":
+        runtimeSiteManifest.themeTokens.secondaryStrong,
+      "--riyi-secondary-muted": runtimeSiteManifest.themeTokens.secondaryMuted,
+      "--riyi-on-secondary": runtimeSiteManifest.themeTokens.onSecondary,
+    });
+    expect(declarationsFor(css ?? "", ".dark")).toEqual({
+      "--riyi-brand-text": runtimeSiteManifest.themeTokens.darkBrandText,
+      "--riyi-secondary": runtimeSiteManifest.themeTokens.darkSecondary,
+      "--riyi-secondary-strong":
+        runtimeSiteManifest.themeTokens.darkSecondaryStrong,
+      "--riyi-secondary-muted":
+        runtimeSiteManifest.themeTokens.darkSecondaryMuted,
+    });
+  });
+
+  it("consumes theme variables with visual defaults", async () => {
+    const css = await readFile("site/.vitepress/theme/custom.css", "utf8");
+
+    expect(declarationsFor(css, ":root")).toMatchObject({
+      "--vp-c-brand-1": "var(--riyi-brand-text, #1f6658)",
+      "--vp-c-brand-2": "var(--riyi-brand-hover, #174f45)",
+      "--vp-c-brand-3": "var(--riyi-brand-strong, #123f37)",
+      "--riyi-forest": "var(--riyi-secondary, #17352f)",
+    });
+    for (const selector of [
+      ".riyi-app-download",
+      ".riyi-app-download__copy h2",
+      ".riyi-download-action",
+      ".riyi-action-panel",
+      ".riyi-action-copy h2",
+      ".riyi-action-link",
+    ]) {
+      expect(declarationsFor(css, selector).color).toBe(
+        "var(--riyi-on-secondary, #ffffff)",
+      );
+    }
+    for (const [selector, opacity] of [
+      [".riyi-app-download__copy > p:last-child", "0.72"],
+      [".riyi-mini-program-token", "0.86"],
+      [".riyi-action-copy > p:last-child", "0.72"],
+    ] as const) {
+      expect(declarationsFor(css, selector)).toMatchObject({
+        color: "var(--riyi-on-secondary, #ffffff)",
+        opacity,
+      });
+    }
   });
 });

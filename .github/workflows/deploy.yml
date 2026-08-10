@@ -43,6 +43,7 @@ jobs:
           path: |
             site/.vitepress/dist
             .generated/posts.json
+            .generated/site.json
           if-no-files-found: error
           include-hidden-files: true
           retention-days: 7

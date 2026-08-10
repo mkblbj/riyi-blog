@@ -12,6 +12,8 @@ import { runtimeSiteManifest as siteManifest } from "./site-manifest.js";
 import { teekConfig } from "./teek-config.js";
 
 const site = siteManifest.content;
+const tokens = siteManifest.themeTokens;
+const themeCss = `:root{--riyi-primary:${tokens.primary};--riyi-secondary:${tokens.secondary};--riyi-brand-text:${tokens.brandText};--riyi-brand-hover:${tokens.brandHover};--riyi-brand-strong:${tokens.brandStrong};--riyi-brand-soft:${tokens.brandSoft};--riyi-secondary-strong:${tokens.secondaryStrong};--riyi-secondary-muted:${tokens.secondaryMuted};--riyi-on-secondary:${tokens.onSecondary}}.dark{--riyi-brand-text:${tokens.darkBrandText};--riyi-secondary:${tokens.darkSecondary};--riyi-secondary-strong:${tokens.darkSecondaryStrong};--riyi-secondary-muted:${tokens.darkSecondaryMuted}}`;
 
 interface RiyiThemeConfig extends DefaultTheme.Config {
   riyi: ResolvedSiteContent;
@@ -40,6 +42,7 @@ export default defineConfigWithTheme<RiyiThemeConfig>({
       },
     ],
     ...buildGlobalHead(process.env),
+    ["style", { id: "riyi-theme-tokens" }, themeCss],
   ],
   markdown: {
     image: { lazyLoading: true },

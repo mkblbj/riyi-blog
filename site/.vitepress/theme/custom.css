@@ -1,11 +1,11 @@
 :root {
-  --vp-c-brand-1: #1f6658;
-  --vp-c-brand-2: #174f45;
-  --vp-c-brand-3: #123f37;
-  --vp-c-brand-soft: rgba(31, 102, 88, 0.14);
-  --riyi-forest: #17352f;
-  --riyi-forest-strong: #102a25;
-  --riyi-mint: #dcece7;
+  --vp-c-brand-1: var(--riyi-brand-text, #1f6658);
+  --vp-c-brand-2: var(--riyi-brand-hover, #174f45);
+  --vp-c-brand-3: var(--riyi-brand-strong, #123f37);
+  --vp-c-brand-soft: var(--riyi-brand-soft, rgba(31, 102, 88, 0.14));
+  --riyi-forest: var(--riyi-secondary, #17352f);
+  --riyi-forest-strong: var(--riyi-secondary-strong, #102a25);
+  --riyi-mint: var(--riyi-secondary-muted, #dcece7);
   --riyi-surface: #ffffff;
   --riyi-surface-soft: #f2f7f5;
   --riyi-border: rgba(31, 102, 88, 0.18);
@@ -17,9 +17,9 @@
 }
 
 .dark {
-  --riyi-forest: #1b453c;
-  --riyi-forest-strong: #12342d;
-  --riyi-mint: #b7d4cb;
+  --riyi-forest: var(--riyi-secondary, #1b453c);
+  --riyi-forest-strong: var(--riyi-secondary-strong, #12342d);
+  --riyi-mint: var(--riyi-secondary-muted, #b7d4cb);
   --riyi-surface: #202321;
   --riyi-surface-soft: #252a27;
   --riyi-border: rgba(153, 201, 187, 0.2);
@@ -84,7 +84,7 @@
   border-radius: 1.75rem;
   background: var(--riyi-forest);
   box-shadow: 0 28px 70px rgba(16, 42, 37, 0.22);
-  color: #ffffff;
+  color: var(--riyi-on-secondary, #ffffff);
 }
 
 .riyi-app-download::after {
@@ -111,7 +111,7 @@
 
 .riyi-app-download__copy h2 {
   margin: 0;
-  color: #ffffff;
+  color: var(--riyi-on-secondary, #ffffff);
   font-size: clamp(1.75rem, 3.2vw, 2.7rem);
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -120,8 +120,9 @@
 
 .riyi-app-download__copy > p:last-child {
   margin: 0.85rem 0 0;
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--riyi-on-secondary, #ffffff);
   line-height: 1.7;
+  opacity: 0.72;
 }
 
 .riyi-app-download__actions {
@@ -138,7 +139,7 @@
   border: 1px solid rgba(255, 255, 255, 0.24);
   border-radius: 1rem;
   background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
+  color: var(--riyi-on-secondary, #ffffff);
   cursor: pointer;
   font: inherit;
   text-align: left;
@@ -177,9 +178,10 @@
 .riyi-mini-program-token {
   grid-column: 1 / -1;
   margin: 0.25rem 0 0;
-  color: rgba(255, 255, 255, 0.86);
+  color: var(--riyi-on-secondary, #ffffff);
   font-size: 0.8rem;
   line-height: 1.6;
+  opacity: 0.86;
 }
 
 .riyi-mini-program-token code {
@@ -361,7 +363,7 @@
   border-radius: 1.75rem;
   background: var(--riyi-forest);
   box-shadow: 0 28px 70px rgba(16, 42, 37, 0.22);
-  color: #ffffff;
+  color: var(--riyi-on-secondary, #ffffff);
 }
 
 .riyi-action-panel::after {
@@ -387,13 +389,14 @@
 }
 
 .riyi-action-copy h2 {
-  color: #ffffff;
+  color: var(--riyi-on-secondary, #ffffff);
 }
 
 .riyi-action-copy > p:last-child {
   margin: 0.85rem 0 0;
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--riyi-on-secondary, #ffffff);
   line-height: 1.7;
+  opacity: 0.72;
 }
 
 .riyi-action-list {
@@ -410,7 +413,7 @@
   padding: 1rem 1.15rem;
   border: 1px solid rgba(255, 255, 255, 0.24);
   border-radius: 1rem;
-  color: #ffffff;
+  color: var(--riyi-on-secondary, #ffffff);
   text-decoration: none;
   transition:
     background-color 180ms ease,

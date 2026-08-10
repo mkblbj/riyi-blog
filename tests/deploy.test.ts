@@ -4,12 +4,50 @@ import {
   runCleanup,
   selectCleanupCandidates,
 } from "../scripts/deploy/cleanup.js";
-import {
-  removeStaleHtml,
-  uploadPlan,
-} from "../scripts/deploy/oss.js";
+import { removeStaleHtml, uploadPlan } from "../scripts/deploy/oss.js";
+
+async function deploymentModule() {
+  return (await import("../scripts/deploy/run.js")) as {
+    deploymentSmokePaths?: (
+      posts: readonly { permalink: string }[],
+      categories: readonly { slug: string; enabled: boolean }[],
+    ) => string[];
+  };
+}
 
 describe("deployment adapters", () => {
+  it("loads deployment path planning without starting a live deployment", async () => {
+    await expect(deploymentModule()).resolves.toBeDefined();
+  });
+
+  it("smoke-checks Home, the latest three articles, and enabled categories", async () => {
+    const { deploymentSmokePaths } = await deploymentModule();
+
+    expect(deploymentSmokePaths).toBeTypeOf("function");
+    expect(
+      deploymentSmokePaths!(
+        [
+          { permalink: "/posts/newest/" },
+          { permalink: "/posts/second/" },
+          { permalink: "/posts/third/" },
+          { permalink: "/posts/older/" },
+        ],
+        [
+          { slug: "rent-guide", enabled: true },
+          { slug: "hidden-guide", enabled: false },
+          { slug: "purchase-guide", enabled: true },
+        ],
+      ),
+    ).toEqual([
+      "/",
+      "/posts/newest/",
+      "/posts/second/",
+      "/posts/third/",
+      "/category/rent-guide/",
+      "/category/purchase-guide/",
+    ]);
+  });
+
   it("finishes every asset before uploading documents", async () => {
     const calls: string[] = [];
     const client = {
@@ -64,10 +102,9 @@ describe("deployment adapters", () => {
     await expect(
       removeStaleHtml(client, new Set(["index.html"])),
     ).resolves.toEqual(["posts/archived/index.html"]);
-    expect(deleteMulti).toHaveBeenCalledWith(
-      ["posts/archived/index.html"],
-      { quiet: true },
-    );
+    expect(deleteMulti).toHaveBeenCalledWith(["posts/archived/index.html"], {
+      quiet: true,
+    });
   });
 
   it("maps object names to canonical CDN URLs and batches refreshes", async () => {
@@ -171,9 +208,8 @@ describe("deployment adapters", () => {
       new Date("2027-02-01T00:00:00.000Z"),
       false,
     );
-    expect(deleteMulti).toHaveBeenCalledWith(
-      ["assets/old.222222222222.js"],
-      { quiet: true },
-    );
+    expect(deleteMulti).toHaveBeenCalledWith(["assets/old.222222222222.js"], {
+      quiet: true,
+    });
   });
 });
