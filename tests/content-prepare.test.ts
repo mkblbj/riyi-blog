@@ -26,6 +26,8 @@ const publishedId = "79f45644-f457-4b94-a288-44780fd8f199";
 const draftId = "fa927df7-7638-4551-b5ec-62e69317cd4c";
 const archivedId = "31b2cd40-b4a8-4bb9-825b-00ef98290625";
 const rentId = "11111111-1111-4111-8111-111111111111";
+const disabledCategoryId = "22222222-2222-4222-8222-222222222222";
+const missingCategoryId = "99999999-9999-4999-8999-999999999999";
 
 async function writeSiteContent(
   root: string,
@@ -186,6 +188,17 @@ async function writeSiteContent(
         order: 10,
       }),
     ),
+    writeFile(
+      join(root, "content/categories/disabled.yml"),
+      stringify({
+        id: disabledCategoryId,
+        slug: "disabled-category",
+        name: "停用分类",
+        description: "该分类不再接受文章引用。",
+        enabled: false,
+        order: 20,
+      }),
+    ),
   ]);
 }
 
@@ -194,13 +207,14 @@ async function writePost(
   id: string,
   status: "draft" | "published" | "archived",
   title: string,
+  categoryId = rentId,
 ) {
   const post = matter.stringify("正文内容\n", {
     id,
     title,
     description: `${title}的说明文字，长度足够用于页面摘要。`,
     coverImg: "/media/cover.png",
-    categories: [rentId],
+    categories: [categoryId],
     tags: ["日本租房"],
     authorName: "日宜房产",
     date: "2026-07-28T10:00:00+09:00",
@@ -308,6 +322,67 @@ describe("prepareContent", () => {
       readFile(join(root, "site/posts", archivedId, "index.md"), "utf8"),
     ).rejects.toMatchObject({ code: "ENOENT" });
   });
+
+  it.each([
+    {
+      status: "draft",
+      id: draftId,
+      reference: "disabled",
+      categoryId: disabledCategoryId,
+      expectedFailure: "disabled category",
+    },
+    {
+      status: "draft",
+      id: draftId,
+      reference: "missing",
+      categoryId: missingCategoryId,
+      expectedFailure: "missing category",
+    },
+    {
+      status: "archived",
+      id: archivedId,
+      reference: "disabled",
+      categoryId: disabledCategoryId,
+      expectedFailure: "disabled category",
+    },
+    {
+      status: "archived",
+      id: archivedId,
+      reference: "missing",
+      categoryId: missingCategoryId,
+      expectedFailure: "missing category",
+    },
+  ] as const)(
+    "rejects a $status post with a $reference reference before replacing live output",
+    async ({ status, id, categoryId, expectedFailure }) => {
+      const root = await fixture();
+      await writePost(root, id, status, `${status} 非法分类`, categoryId);
+      const sentinelPath = join(root, "site/posts/old/index.md");
+      await mkdir(dirname(sentinelPath), { recursive: true });
+      await writeFile(sentinelPath, "existing live output", "utf8");
+
+      const failure = await prepareContent({
+        contentDir: join(root, "content"),
+        siteDir: join(root, "site"),
+        manifestPath: join(root, ".generated/posts.json"),
+        optimizeImages: false,
+      }).then(
+        () => undefined,
+        (error: unknown) => error,
+      );
+
+      expect(failure).toBeInstanceOf(Error);
+      expect((failure as Error).message).toContain(
+        join(root, `content/posts/${id}.md`),
+      );
+      expect((failure as Error).message).toContain(
+        `${expectedFailure} ${categoryId}`,
+      );
+      await expect(readFile(sentinelPath, "utf8")).resolves.toBe(
+        "existing live output",
+      );
+    },
+  );
 
   it("emits a validated site manifest with hashed media used by RSS", async () => {
     const root = await fixture({ siteImages: true });

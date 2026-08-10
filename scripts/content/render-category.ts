@@ -2,6 +2,16 @@ import matter from "gray-matter";
 import type { Category } from "../../src/site-content.js";
 import type { PublicPost } from "./schema.js";
 
+function renderPlainText(value: string): string {
+  return value
+    .replace(/\r\n?/g, "\n")
+    .replace(/\s*\n+\s*/g, " ")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/([\\`*_[\]{}()#+.!|~:-])/g, "\\$1");
+}
+
 export function renderCategoryPage(
   category: Category,
   posts: readonly PublicPost[],
@@ -11,12 +21,12 @@ export function renderCategoryPage(
   );
   const list = categoryPosts.length
     ? categoryPosts
-        .map((post) => `- [${post.title}](${post.permalink})`)
+        .map((post) => `- [${renderPlainText(post.title)}](${post.permalink})`)
         .join("\n")
     : "该分类暂时还没有公开文章。";
-  const body = `# ${category.name}
+  const body = `# ${renderPlainText(category.name)}
 
-${category.description}
+${renderPlainText(category.description)}
 
 ${list}
 `;

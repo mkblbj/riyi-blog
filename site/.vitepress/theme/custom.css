@@ -3,9 +3,9 @@
   --vp-c-brand-2: var(--riyi-brand-hover, #174f45);
   --vp-c-brand-3: var(--riyi-brand-strong, #123f37);
   --vp-c-brand-soft: var(--riyi-brand-soft, rgba(31, 102, 88, 0.14));
-  --riyi-forest: var(--riyi-secondary, #17352f);
+  --riyi-forest: var(--riyi-panel-bg, #17352f);
   --riyi-forest-strong: var(--riyi-secondary-strong, #102a25);
-  --riyi-mint: var(--riyi-secondary-muted, #dcece7);
+  --riyi-mint: var(--riyi-panel-accent, #ffffff);
   --riyi-surface: #ffffff;
   --riyi-surface-soft: #f2f7f5;
   --riyi-border: color-mix(
@@ -22,9 +22,9 @@
 }
 
 .dark {
-  --riyi-forest: var(--riyi-secondary, #1b453c);
+  --riyi-forest: var(--riyi-panel-bg, #1b453c);
   --riyi-forest-strong: var(--riyi-secondary-strong, #12342d);
-  --riyi-mint: var(--riyi-secondary-muted, #b7d4cb);
+  --riyi-mint: var(--riyi-panel-accent, #ffffff);
   --riyi-surface: #202321;
   --riyi-surface-soft: #252a27;
   --riyi-border: color-mix(
@@ -94,7 +94,7 @@
   background: var(--riyi-forest);
   box-shadow: 0 28px 70px
     color-mix(in srgb, var(--riyi-secondary-strong, #102a25) 22%, transparent);
-  color: var(--riyi-on-secondary, #ffffff);
+  color: var(--riyi-panel-text, #ffffff);
 }
 
 .riyi-app-download::after {
@@ -106,7 +106,7 @@
   border-radius: 50%;
   background: color-mix(
     in srgb,
-    var(--riyi-on-secondary, #ffffff) 8%,
+    var(--riyi-panel-text, #ffffff) 8%,
     transparent
   );
   content: "";
@@ -125,7 +125,7 @@
 
 .riyi-app-download__copy h2 {
   margin: 0;
-  color: var(--riyi-on-secondary, #ffffff);
+  color: var(--riyi-panel-text, #ffffff);
   font-size: clamp(1.75rem, 3.2vw, 2.7rem);
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -134,9 +134,8 @@
 
 .riyi-app-download__copy > p:last-child {
   margin: 0.85rem 0 0;
-  color: var(--riyi-on-secondary, #ffffff);
+  color: var(--riyi-panel-text, #ffffff);
   line-height: 1.7;
-  opacity: 0.72;
 }
 
 .riyi-app-download__actions {
@@ -151,14 +150,10 @@
   align-items: center;
   padding: 1rem;
   border: 1px solid
-    color-mix(in srgb, var(--riyi-on-secondary, #ffffff) 24%, transparent);
+    color-mix(in srgb, var(--riyi-panel-text, #ffffff) 24%, transparent);
   border-radius: 1rem;
-  background: color-mix(
-    in srgb,
-    var(--riyi-on-secondary, #ffffff) 10%,
-    transparent
-  );
-  color: var(--riyi-on-secondary, #ffffff);
+  background: transparent;
+  color: var(--riyi-panel-text, #ffffff);
   cursor: pointer;
   font: inherit;
   text-align: left;
@@ -171,7 +166,7 @@
 
 .riyi-download-action > .tk-icon {
   flex: 0 0 auto;
-  filter: var(--riyi-on-secondary-filter, brightness(0) invert(1));
+  filter: var(--riyi-panel-text-filter, brightness(0) invert(1));
 }
 
 .riyi-download-action > span {
@@ -191,16 +186,14 @@
   color: inherit;
   font-size: 0.72rem;
   line-height: 1.45;
-  opacity: 0.68;
 }
 
 .riyi-mini-program-token {
   grid-column: 1 / -1;
   margin: 0.25rem 0 0;
-  color: var(--riyi-on-secondary, #ffffff);
+  color: var(--riyi-panel-text, #ffffff);
   font-size: 0.8rem;
   line-height: 1.6;
-  opacity: 0.86;
 }
 
 .riyi-mini-program-token code {
@@ -383,7 +376,7 @@
   background: var(--riyi-forest);
   box-shadow: 0 28px 70px
     color-mix(in srgb, var(--riyi-secondary-strong, #102a25) 22%, transparent);
-  color: var(--riyi-on-secondary, #ffffff);
+  color: var(--riyi-panel-text, #ffffff);
 }
 
 .riyi-action-panel::after {
@@ -395,7 +388,7 @@
   border-radius: 50%;
   background: color-mix(
     in srgb,
-    var(--riyi-on-secondary, #ffffff) 8%,
+    var(--riyi-panel-text, #ffffff) 8%,
     transparent
   );
   content: "";
@@ -413,14 +406,13 @@
 }
 
 .riyi-action-copy h2 {
-  color: var(--riyi-on-secondary, #ffffff);
+  color: var(--riyi-panel-text, #ffffff);
 }
 
 .riyi-action-copy > p:last-child {
   margin: 0.85rem 0 0;
-  color: var(--riyi-on-secondary, #ffffff);
+  color: var(--riyi-panel-text, #ffffff);
   line-height: 1.7;
-  opacity: 0.72;
 }
 
 .riyi-action-list {
@@ -436,9 +428,9 @@
   justify-content: center;
   padding: 1rem 1.15rem;
   border: 1px solid
-    color-mix(in srgb, var(--riyi-on-secondary, #ffffff) 24%, transparent);
+    color-mix(in srgb, var(--riyi-panel-text, #ffffff) 24%, transparent);
   border-radius: 1rem;
-  color: var(--riyi-on-secondary, #ffffff);
+  color: var(--riyi-panel-text, #ffffff);
   text-decoration: none;
   transition:
     background-color 180ms ease,
@@ -456,21 +448,16 @@
   color: inherit;
   font-size: 0.75rem;
   line-height: 1.45;
-  opacity: 0.68;
 }
 
 .riyi-action-link--primary {
-  border-color: var(--riyi-on-secondary, #ffffff);
-  background: var(--riyi-on-secondary, #ffffff);
-  color: var(--riyi-forest-strong);
+  border-color: var(--riyi-panel-text, #ffffff);
+  background: var(--riyi-panel-text, #ffffff);
+  color: var(--riyi-panel-bg, #17352f);
 }
 
 .riyi-action-link--secondary {
-  background: color-mix(
-    in srgb,
-    var(--riyi-on-secondary, #ffffff) 12%,
-    transparent
-  );
+  background: transparent;
 }
 
 .riyi-action-link--quiet {
@@ -540,7 +527,7 @@
 .riyi-article-cta__link--primary {
   border-color: var(--vp-c-brand-1);
   background: var(--vp-c-brand-1);
-  color: #ffffff;
+  color: var(--riyi-article-primary-text, #ffffff);
 }
 
 .riyi-article-cta__link--secondary {
@@ -556,7 +543,7 @@
 
 .riyi-download-action:focus-visible,
 .riyi-action-link:focus-visible {
-  outline: 3px solid var(--riyi-on-secondary, #ffffff);
+  outline: 3px solid var(--riyi-panel-text, #ffffff);
   outline-offset: 3px;
 }
 
@@ -585,33 +572,25 @@
   .riyi-download-action:hover {
     border-color: color-mix(
       in srgb,
-      var(--riyi-on-secondary, #ffffff) 54%,
+      var(--riyi-panel-text, #ffffff) 54%,
       transparent
     );
-    background: color-mix(
-      in srgb,
-      var(--riyi-on-secondary, #ffffff) 18%,
-      transparent
-    );
+    background: transparent;
   }
 
   .riyi-action-link--secondary:hover,
   .riyi-action-link--quiet:hover {
     border-color: color-mix(
       in srgb,
-      var(--riyi-on-secondary, #ffffff) 54%,
+      var(--riyi-panel-text, #ffffff) 54%,
       transparent
     );
-    background: color-mix(
-      in srgb,
-      var(--riyi-on-secondary, #ffffff) 18%,
-      transparent
-    );
+    background: transparent;
   }
 
   .riyi-article-cta__link--primary:hover {
-    border-color: var(--vp-c-brand-2);
-    background: var(--vp-c-brand-2);
+    border-color: var(--vp-c-brand-1);
+    background: var(--vp-c-brand-1);
   }
 
   .riyi-article-cta__link--secondary:hover,

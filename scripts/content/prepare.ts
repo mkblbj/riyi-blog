@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import {
   resolveSiteContent,
   SiteManifestSchema,
+  validatePostCategoryReferences,
   type SiteManifest,
 } from "../../src/site-content.js";
 import { SITE_URL } from "../../src/site.js";
@@ -175,6 +176,13 @@ export async function prepareContent(
 ): Promise<BuildManifest> {
   const siteContent = resolveSiteContent(loadSiteContent(options.contentDir));
   const loaded = await loadPosts(options.contentDir);
+  for (const post of loaded) {
+    validatePostCategoryReferences(
+      post.data.categories,
+      siteContent.categories,
+      post.sourcePath,
+    );
+  }
   const siteManifestPath =
     options.siteManifestPath ??
     join(dirname(options.manifestPath), "site.json");

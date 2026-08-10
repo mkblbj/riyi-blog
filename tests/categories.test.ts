@@ -1,3 +1,6 @@
+import { load } from "cheerio";
+import matter from "gray-matter";
+import { createMarkdownRenderer } from "vitepress";
 import { describe, expect, it } from "vitest";
 import { renderCategoryPage } from "../scripts/content/render-category.js";
 import { toPublicPost } from "../scripts/content/render-post.js";
@@ -42,6 +45,50 @@ describe("category pages", () => {
     expect(renderCategoryPage(category, [])).toContain(
       "该分类暂时还没有公开文章。",
     );
+  });
+
+  it("renders category fields and post titles as plain text", async () => {
+    const hostileCategory = {
+      ...category,
+      name: `安全分类 <img src=x onerror="alert(1)">
+## 伪造标题 [x](javascript:alert(2))`,
+      description: `::: danger 伪造容器
+:::
+安全说明 <script>alert(3)</script>
+<iframe src="javascript:alert(4)"></iframe>
+- 伪造列表`,
+    };
+    const hostilePost = {
+      ...publishedPost,
+      title: `安全文章 <img src=x onerror="alert(5)">](javascript:alert(6))
+- [伪造链接`,
+    };
+
+    const output = renderCategoryPage(hostileCategory, [hostilePost]);
+    const parsed = matter(output);
+    const markdown = await createMarkdownRenderer("site");
+    const html = markdown.render(parsed.content);
+    const $ = load(html);
+    const contentLinks = $("a").not(".header-anchor");
+
+    expect(parsed.data).toMatchObject({
+      title: hostileCategory.name,
+      description: hostileCategory.description,
+    });
+    expect($("img, script, iframe")).toHaveLength(0);
+    expect($("[onerror], [onclick], [onload]")).toHaveLength(0);
+    expect($("a[href^='javascript:']")).toHaveLength(0);
+    expect($("h1")).toHaveLength(1);
+    expect($("h2")).toHaveLength(0);
+    expect($(".custom-block")).toHaveLength(0);
+    expect($("ul")).toHaveLength(1);
+    expect(contentLinks).toHaveLength(1);
+    expect(contentLinks.attr("href")).toBe(`/posts/${publishedId}/`);
+    expect($.root().text()).toContain("安全分类");
+    expect($.root().text()).toContain("伪造标题 [x](javascript:alert(2))");
+    expect($.root().text()).toContain("安全说明 <script>alert(3)</script>");
+    expect($.root().text()).toContain("伪造列表");
+    expect($.root().text()).toContain("安全文章");
   });
 });
 

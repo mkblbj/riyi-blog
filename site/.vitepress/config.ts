@@ -8,7 +8,7 @@ import {
 } from "../../src/seo.js";
 import type { ResolvedSiteContent } from "../../src/site-content.js";
 import { SITE_URL } from "../../src/site.js";
-import type { ThemeTokens } from "../../src/theme-colors.js";
+import { contrastRatio, type ThemeTokens } from "../../src/theme-colors.js";
 import { runtimeSiteManifest as siteManifest } from "./site-manifest.js";
 import { teekConfig } from "./teek-config.js";
 
@@ -19,7 +19,14 @@ export function buildThemeCss(tokens: ThemeTokens): string {
     tokens.onSecondary === "#ffffff"
       ? "brightness(0) invert(1)"
       : "brightness(0) invert(0.067)";
-  return `:root{--riyi-primary:${tokens.primary};--riyi-secondary:${tokens.secondary};--riyi-brand-text:${tokens.brandText};--riyi-brand-hover:${tokens.brandHover};--riyi-brand-strong:${tokens.brandStrong};--riyi-brand-soft:${tokens.brandSoft};--riyi-secondary-strong:${tokens.secondaryStrong};--riyi-secondary-muted:${tokens.secondaryMuted};--riyi-on-secondary:${tokens.onSecondary};--riyi-on-secondary-filter:${onSecondaryFilter}}.dark{--riyi-brand-text:${tokens.darkBrandText};--riyi-secondary:${tokens.darkSecondary};--riyi-secondary-strong:${tokens.darkSecondaryStrong};--riyi-secondary-muted:${tokens.darkSecondaryMuted}}`;
+  const darkPanelText =
+    contrastRatio("#000000", tokens.darkSecondary) >=
+    contrastRatio("#ffffff", tokens.darkSecondary)
+      ? "#000000"
+      : "#ffffff";
+  const darkPanelTextFilter =
+    darkPanelText === "#ffffff" ? "brightness(0) invert(1)" : "brightness(0)";
+  return `:root{--riyi-primary:${tokens.primary};--riyi-secondary:${tokens.secondary};--riyi-brand-text:${tokens.brandText};--riyi-brand-hover:${tokens.brandHover};--riyi-brand-strong:${tokens.brandStrong};--riyi-brand-soft:${tokens.brandSoft};--riyi-secondary-strong:${tokens.secondaryStrong};--riyi-secondary-muted:${tokens.secondaryMuted};--riyi-on-secondary:${tokens.onSecondary};--riyi-on-secondary-filter:${onSecondaryFilter};--riyi-panel-bg:${tokens.secondary};--riyi-panel-text:${tokens.onSecondary};--riyi-panel-accent:${tokens.onSecondary};--riyi-panel-text-filter:${onSecondaryFilter};--riyi-article-primary-text:#ffffff}.dark{--riyi-brand-text:${tokens.darkBrandText};--riyi-secondary:${tokens.darkSecondary};--riyi-secondary-strong:${tokens.darkSecondaryStrong};--riyi-secondary-muted:${tokens.darkSecondaryMuted};--riyi-panel-bg:${tokens.darkSecondary};--riyi-panel-text:${darkPanelText};--riyi-panel-accent:${darkPanelText};--riyi-panel-text-filter:${darkPanelTextFilter};--riyi-article-primary-text:#202321}`;
 }
 
 const themeCss = buildThemeCss(siteManifest.themeTokens);
