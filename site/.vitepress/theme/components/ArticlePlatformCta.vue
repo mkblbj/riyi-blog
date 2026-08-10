@@ -2,36 +2,42 @@
 import { computed } from "vue";
 import { useData } from "vitepress";
 import {
-  OFFICIAL_ACTIONS,
+  selectVisibleActions,
   shouldShowArticleCta,
 } from "../../../../src/official-site.js";
+import { useRiyiContent } from "../use-riyi-content.js";
 
 const { frontmatter } = useData();
-const isArticle = computed(() => shouldShowArticleCta(frontmatter.value));
+const content = useRiyiContent();
+const section = computed(() => content.value.home.actions);
+const actions = computed(() => selectVisibleActions(section.value));
+const isVisible = computed(
+  () => shouldShowArticleCta(frontmatter.value) && actions.value.length > 0,
+);
 </script>
 
 <template>
   <aside
-    v-if="isArticle"
+    v-if="isVisible"
     class="riyi-article-cta"
     aria-labelledby="riyi-article-cta-title"
   >
     <div>
-      <p class="riyi-eyebrow">需要进一步找房？</p>
-      <h2 id="riyi-article-cta-title">从文章继续到你的实际需求</h2>
-      <p>查看当前房源，或把预算、区域和入住计划告诉日宜。</p>
+      <p class="riyi-eyebrow">{{ section.eyebrow }}</p>
+      <h2 id="riyi-article-cta-title">{{ section.title }}</h2>
+      <p>{{ section.description }}</p>
     </div>
     <div class="riyi-article-cta__actions">
       <a
-        v-for="action in OFFICIAL_ACTIONS"
-        :key="action.label"
+        v-for="action in actions"
+        :key="action.id"
         :class="[
           'riyi-article-cta__link',
           `riyi-article-cta__link--${action.tone}`,
         ]"
         :href="action.href"
-        target="_blank"
-        rel="noreferrer"
+        :target="action.external ? '_blank' : undefined"
+        :rel="action.external ? 'noreferrer' : undefined"
       >
         {{ action.label }}
       </a>

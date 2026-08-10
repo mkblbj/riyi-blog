@@ -1,39 +1,67 @@
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { loadSiteContent } from "../scripts/content/load-site.js";
 import {
-  HOME_ADVANTAGES,
-  HOME_SERVICES,
-  OFFICIAL_ACTIONS,
+  selectVisibleActions,
+  selectVisibleAdvantages,
+  selectVisibleServices,
   shouldShowArticleCta,
 } from "../src/official-site.js";
+import { resolveSiteContent } from "../src/site-content.js";
+
+function homeFixture() {
+  const home = structuredClone(
+    resolveSiteContent(loadSiteContent(join(process.cwd(), "content"))).home,
+  );
+
+  const serviceOrder = { purchase: 10, rent: 20, study: 30 };
+  for (const service of home.services.items) {
+    service.enabled = service.id !== "study";
+    service.order = serviceOrder[service.id];
+  }
+
+  const advantageOrder = {
+    follow: 10,
+    verify: 20,
+    commute: 30,
+    video: 40,
+  };
+  for (const advantage of home.advantages.items) {
+    advantage.enabled = advantage.id !== "video";
+    advantage.order = advantageOrder[advantage.id];
+  }
+
+  const actionOrder = { listings: 10, wechat: 20, demand: 30 };
+  for (const action of home.actions.items) {
+    action.enabled = action.id !== "demand";
+    action.order = actionOrder[action.id];
+  }
+
+  return home;
+}
 
 describe("official site promotion", () => {
-  it("presents the three approved service paths", () => {
-    expect(HOME_SERVICES.map(({ title }) => title)).toEqual([
-      "日本租房",
-      "日本买房",
-      "留学安居",
+  it("sorts and filters CMS services and actions", () => {
+    const home = homeFixture();
+
+    expect(selectVisibleServices(home.services).map(({ id }) => id)).toEqual([
+      "purchase",
+      "rent",
+    ]);
+    expect(selectVisibleActions(home.actions).map(({ id }) => id)).toEqual([
+      "listings",
+      "wechat",
     ]);
   });
 
-  it("presents only credible service advantages", () => {
-    expect(HOME_ADVANTAGES.map(({ title }) => title)).toEqual([
-      "短视频了解房源",
-      "结合通勤与生活圈筛选",
-      "整理与核验房源信息",
-      "按需求持续关注",
-    ]);
-    expect(HOME_ADVANTAGES).toHaveLength(4);
-  });
+  it("sorts and filters CMS advantages without mutating their source order", () => {
+    const home = homeFixture();
+    const sourceOrder = home.advantages.items.map(({ id }) => id);
 
-  it("provides three secure business actions", () => {
-    expect(OFFICIAL_ACTIONS.map(({ label }) => label)).toEqual([
-      "查看房源",
-      "提交需求",
-      "微信咨询",
-    ]);
-    for (const action of OFFICIAL_ACTIONS) {
-      expect(new URL(action.href).protocol).toBe("https:");
-    }
+    expect(
+      selectVisibleAdvantages(home.advantages).map(({ id }) => id),
+    ).toEqual(["follow", "verify", "commute"]);
+    expect(home.advantages.items.map(({ id }) => id)).toEqual(sourceOrder);
   });
 
   it("shows the article CTA only for explicit article pages", () => {

@@ -1,15 +1,20 @@
 <script setup lang="ts">
 import { TkIcon, TkMessage } from "vitepress-theme-teek";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { copyText } from "../../../../src/clipboard.js";
-import { APP_DOWNLOAD_ACTIONS } from "../../../../src/official-site.js";
-import { APP_DOWNLOAD_LINKS } from "../../../../src/platform-links.js";
+import { buildAppDownloadActions } from "../../../../src/official-site.js";
+import type { ResolvedHomeContent } from "../../../../src/site-content.js";
 
+const props = defineProps<{
+  config: ResolvedHomeContent["appDownload"];
+}>();
+
+const actions = computed(() => buildAppDownloadActions(props.config));
 const showManualCopy = ref(false);
 
 async function copyMiniProgramLink() {
   const result = await copyText(
-    APP_DOWNLOAD_LINKS.wechatMiniProgram,
+    props.config.wechatMiniProgram,
     typeof navigator === "undefined" ? undefined : navigator.clipboard,
   );
 
@@ -29,18 +34,13 @@ async function copyMiniProgramLink() {
     aria-labelledby="riyi-app-download-title"
   >
     <div class="riyi-app-download__copy">
-      <p class="riyi-eyebrow">随时随地找房</p>
-      <h2 id="riyi-app-download-title">下载日宜找房 App</h2>
-      <p>
-        浏览日本房源、短视频看房和区域信息，也可以直接使用微信小程序。
-      </p>
+      <p class="riyi-eyebrow">{{ config.eyebrow }}</p>
+      <h2 id="riyi-app-download-title">{{ config.title }}</h2>
+      <p>{{ config.description }}</p>
     </div>
 
     <div class="riyi-app-download__actions">
-      <template
-        v-for="action in APP_DOWNLOAD_ACTIONS"
-        :key="action.id"
-      >
+      <template v-for="action in actions" :key="action.id">
         <a
           v-if="action.kind === 'link'"
           class="riyi-download-action"
@@ -79,12 +79,8 @@ async function copyMiniProgramLink() {
         </button>
       </template>
 
-      <p
-        v-if="showManualCopy"
-        class="riyi-mini-program-token"
-        role="status"
-      >
-        请手动复制：<code>{{ APP_DOWNLOAD_LINKS.wechatMiniProgram }}</code>
+      <p v-if="showManualCopy" class="riyi-mini-program-token" role="status">
+        请手动复制：<code>{{ config.wechatMiniProgram }}</code>
       </p>
     </div>
   </section>

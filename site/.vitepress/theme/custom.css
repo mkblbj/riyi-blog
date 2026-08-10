@@ -12,9 +12,8 @@
   --riyi-muted: #5f6f6a;
   --riyi-shadow: 0 22px 55px rgba(20, 55, 48, 0.09);
   --vp-font-family-base:
-    "Punctuation SC", "PingFang SC", "Microsoft YaHei",
-    "Noto Sans CJK SC", "Noto Sans SC", "Source Han Sans SC",
-    "Hiragino Sans GB", sans-serif;
+    "Punctuation SC", "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC",
+    "Noto Sans SC", "Source Han Sans SC", "Hiragino Sans GB", sans-serif;
 }
 
 .dark {
@@ -46,7 +45,11 @@
   overflow: hidden;
   padding: clamp(4.5rem, 8vw, 7rem) 0 clamp(3.5rem, 6vw, 5.5rem);
   background:
-    radial-gradient(circle at 8% 8%, rgba(31, 102, 88, 0.08), transparent 28rem),
+    radial-gradient(
+      circle at 8% 8%,
+      rgba(31, 102, 88, 0.08),
+      transparent 28rem
+    ),
     var(--vp-c-bg);
 }
 
@@ -240,6 +243,14 @@
     border-color 180ms ease,
     box-shadow 180ms ease,
     transform 180ms ease;
+}
+
+.riyi-service-card__image {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  margin-bottom: 1.5rem;
+  border-radius: 1rem;
+  object-fit: cover;
 }
 
 .riyi-service-index {

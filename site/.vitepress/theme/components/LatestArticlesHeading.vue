@@ -1,7 +1,15 @@
+<script setup lang="ts">
+import { computed } from "vue";
+import { useRiyiContent } from "../use-riyi-content.js";
+
+const content = useRiyiContent();
+const articles = computed(() => content.value.home.articles);
+</script>
+
 <template>
   <header class="riyi-section-heading">
-    <p class="riyi-eyebrow">日宜内容</p>
-    <h2>最新房产资讯</h2>
-    <p>持续整理日本租房、买房、区域选择与日常生活中的实用信息。</p>
+    <p class="riyi-eyebrow">{{ articles.eyebrow }}</p>
+    <h2>{{ articles.title }}</h2>
+    <p>{{ articles.description }}</p>
   </header>
 </template>
