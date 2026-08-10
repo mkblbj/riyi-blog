@@ -1,4 +1,3 @@
-import { readFileSync } from "node:fs";
 import {
   access,
   cp,
@@ -12,18 +11,17 @@ import { join } from "node:path";
 import matter from "gray-matter";
 import { describe, expect, it } from "vitest";
 import { PLATFORM_LINKS } from "../src/platform-links.js";
-import { SiteManifestSchema, type SiteManifest } from "../src/site-content.js";
+import type { SiteManifest } from "../src/site-content.js";
 import { PLATFORM_URL, SITE_URL } from "../src/site.js";
 import siteConfig from "../site/.vitepress/config.js";
+import { runtimeSiteManifest } from "../site/.vitepress/site-manifest.js";
 import {
   buildTeekBanner,
   teekConfig,
   teekVitePlugins,
 } from "../site/.vitepress/teek-config.js";
 
-const runtimeManifest = SiteManifestSchema.parse(
-  JSON.parse(readFileSync(".generated/site.json", "utf8")),
-);
+const runtimeManifest = runtimeSiteManifest;
 
 async function runtimeManifestLoader() {
   const manifestModule =
@@ -52,9 +50,21 @@ describe("site contract", () => {
   });
 
   it("loads the generated runtime manifest before source content", async () => {
+    const root = await mkdtemp(join(tmpdir(), "riyi-runtime-site-"));
+    const generatedDir = join(root, ".generated");
+    const manifest = {
+      ...runtimeManifest,
+      generatedAt: "2026-08-10T00:00:00.000Z",
+    };
+    await mkdir(generatedDir, { recursive: true });
+    await writeFile(
+      join(generatedDir, "site.json"),
+      JSON.stringify(manifest),
+      "utf8",
+    );
     const loadRuntimeSiteManifest = await runtimeManifestLoader();
 
-    expect(loadRuntimeSiteManifest()).toEqual(runtimeManifest);
+    expect(loadRuntimeSiteManifest(root)).toEqual(manifest);
   });
 
   it("falls back to source YAML only when the generated manifest is absent", async () => {

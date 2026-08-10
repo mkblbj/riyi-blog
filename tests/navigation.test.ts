@@ -1,4 +1,3 @@
-import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { DefaultTheme } from "vitepress";
 import { describe, expect, it } from "vitest";
@@ -6,13 +5,11 @@ import { loadSiteContent } from "../scripts/content/load-site.js";
 import { buildNavigation } from "../src/navigation.js";
 import {
   resolveSiteContent,
-  SiteManifestSchema,
   type ResolvedSiteContent,
 } from "../src/site-content.js";
+import { runtimeSiteManifest } from "../site/.vitepress/site-manifest.js";
 
-const manifest = SiteManifestSchema.parse(
-  JSON.parse(readFileSync(".generated/site.json", "utf8")),
-);
+const manifest = runtimeSiteManifest;
 
 function projectNavigation(
   content: ResolvedSiteContent,
