@@ -1,8 +1,13 @@
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { resolveSiteContent } from "../../src/site-content.js";
+import {
+  resolveSiteContent,
+  SiteManifestSchema,
+  type SiteManifest,
+} from "../../src/site-content.js";
 import { SITE_URL } from "../../src/site.js";
+import { createThemeTokens } from "../../src/theme-colors.js";
 import { writeRss } from "../rss.js";
 import { applyMediaManifest, optimizeMedia } from "./images.js";
 import { loadPosts } from "./load-posts.js";
@@ -10,6 +15,7 @@ import { loadSiteContent } from "./load-site.js";
 import { renderCategoryPage } from "./render-category.js";
 import { renderPost, toPublicPost } from "./render-post.js";
 import { BuildManifest, PrepareOptions } from "./schema.js";
+import { applySiteMediaManifest } from "./site-images.js";
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -37,6 +43,17 @@ export async function prepareContent(
           join(options.contentDir, "media"),
           join(options.siteDir, "public/media"),
         );
+  const siteMedia =
+    options.optimizeImages === false
+      ? undefined
+      : await optimizeMedia(
+          join(options.contentDir, "site-media"),
+          join(options.siteDir, "public/site-media"),
+          "/site-media",
+        );
+  const publicSiteContent = siteMedia
+    ? applySiteMediaManifest(siteContent, siteMedia)
+    : siteContent;
   const posts = loaded
     .filter((post) => post.data.status === "published")
     .map((post) => toPublicPost(post, siteContent.categories))
@@ -67,10 +84,27 @@ export async function prepareContent(
     JSON.stringify(manifest, null, 2),
     "utf8",
   );
+  const siteManifestPath =
+    options.siteManifestPath ??
+    join(dirname(options.manifestPath), "site.json");
+  const siteManifest: SiteManifest = SiteManifestSchema.parse({
+    generatedAt: manifest.generatedAt,
+    content: publicSiteContent,
+    themeTokens: createThemeTokens(
+      publicSiteContent.settings.primaryColor,
+      publicSiteContent.settings.secondaryColor,
+    ),
+  });
+  await mkdir(dirname(siteManifestPath), { recursive: true });
+  await writeFile(
+    siteManifestPath,
+    JSON.stringify(siteManifest, null, 2),
+    "utf8",
+  );
   await writeRss(manifest, join(options.siteDir, "public/rss.xml"), {
-    title: siteContent.settings.siteName,
-    description: siteContent.settings.siteDescription,
-    logo: siteContent.settings.logo,
+    title: publicSiteContent.settings.siteName,
+    description: publicSiteContent.settings.siteDescription,
+    logo: publicSiteContent.settings.logo,
     url: SITE_URL,
   });
   return manifest;

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ThemeTokensSchema } from "./theme-colors.js";
 
 const uuid = z.uuid();
 const shortText = z.string().trim().min(1).max(120);
@@ -216,6 +217,14 @@ export type ResolvedNavigationItem = z.infer<
   typeof ResolvedNavigationItemSchema
 >;
 export type ResolvedSiteContent = z.infer<typeof ResolvedSiteContentSchema>;
+
+export const SiteManifestSchema = z.object({
+  generatedAt: z.iso.datetime({ offset: true }),
+  content: ResolvedSiteContentSchema,
+  themeTokens: ThemeTokensSchema,
+});
+
+export type SiteManifest = z.infer<typeof SiteManifestSchema>;
 
 function isHttpsUrl(value: string): boolean {
   try {

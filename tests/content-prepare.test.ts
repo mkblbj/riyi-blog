@@ -1,4 +1,11 @@
-import { mkdtemp, mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import {
+  access,
+  mkdtemp,
+  mkdir,
+  readFile,
+  rename,
+  writeFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { load } from "cheerio";
@@ -7,13 +14,17 @@ import sharp from "sharp";
 import { describe, expect, it } from "vitest";
 import { stringify } from "yaml";
 import { prepareContent } from "../scripts/content/prepare.js";
+import { SiteManifestSchema } from "../src/site-content.js";
 
 const publishedId = "79f45644-f457-4b94-a288-44780fd8f199";
 const draftId = "fa927df7-7638-4551-b5ec-62e69317cd4c";
 const archivedId = "31b2cd40-b4a8-4bb9-825b-00ef98290625";
 const rentId = "11111111-1111-4111-8111-111111111111";
 
-async function writeSiteContent(root: string) {
+async function writeSiteContent(
+  root: string,
+  options: { siteImages?: boolean } = {},
+) {
   await mkdir(join(root, "content/site"), { recursive: true });
   await mkdir(join(root, "content/categories"), { recursive: true });
   await Promise.all([
@@ -25,7 +36,7 @@ async function writeSiteContent(root: string) {
         siteName: "日宜房产",
         siteDescription:
           "日宜房产提供日本房产租赁、买卖与安居服务，并整理区域选择、流程费用和日常生活的实用内容。",
-        logo: "",
+        logo: options.siteImages ? "/site-media/logo.png" : "",
         primaryColor: "#1f6658",
         secondaryColor: "#17352f",
       }),
@@ -36,8 +47,8 @@ async function writeSiteContent(root: string) {
         hero: {
           title: "日宜房产",
           description: "日本找房，就上日宜。",
-          image: "",
-          imageAlt: "",
+          image: options.siteImages ? "/site-media/hero.png" : "",
+          imageAlt: options.siteImages ? "东京住宅客厅" : "",
           quickLinks: [
             {
               id: "rent",
@@ -90,8 +101,9 @@ async function writeSiteContent(root: string) {
             enabled: true,
             title: `${id}服务`,
             description: `${id}服务说明`,
-            image: "",
-            imageAlt: "",
+            image:
+              options.siteImages && id === "rent" ? "/site-media/rent.png" : "",
+            imageAlt: options.siteImages && id === "rent" ? "日本租房服务" : "",
             linkLabel: "阅读指南",
             kind: "category",
             categoryId: rentId,
@@ -192,12 +204,12 @@ async function writePost(
   await writeFile(join(root, "content/posts", `${id}.md`), post);
 }
 
-async function fixture() {
+async function fixture(options: { siteImages?: boolean } = {}) {
   const root = await mkdtemp(join(tmpdir(), "riyi-content-"));
   await mkdir(join(root, "content/posts"), { recursive: true });
   await mkdir(join(root, "content/media"), { recursive: true });
   await mkdir(join(root, "site"), { recursive: true });
-  await writeSiteContent(root);
+  await writeSiteContent(root, options);
   await sharp({
     create: {
       width: 80,
@@ -208,6 +220,23 @@ async function fixture() {
   })
     .png()
     .toFile(join(root, "content/media/cover.png"));
+  if (options.siteImages) {
+    await mkdir(join(root, "content/site-media"), { recursive: true });
+    await Promise.all(
+      ["logo.png", "hero.png", "rent.png"].map((name) =>
+        sharp({
+          create: {
+            width: 80,
+            height: 45,
+            channels: 3,
+            background: "#1f6658",
+          },
+        })
+          .png()
+          .toFile(join(root, "content/site-media", name)),
+      ),
+    );
+  }
   await writePost(root, publishedId, "published", "已发布文章");
   await writePost(root, draftId, "draft", "草稿文章");
   await writePost(root, archivedId, "archived", "归档文章");
@@ -271,6 +300,69 @@ describe("prepareContent", () => {
     ).rejects.toMatchObject({ code: "ENOENT" });
     await expect(
       readFile(join(root, "site/posts", archivedId, "index.md"), "utf8"),
+    ).rejects.toMatchObject({ code: "ENOENT" });
+  });
+
+  it("emits a validated site manifest with hashed media used by RSS", async () => {
+    const root = await fixture({ siteImages: true });
+    const postsManifestPath = join(root, ".generated/posts.json");
+    const postsManifest = await prepareContent({
+      contentDir: join(root, "content"),
+      siteDir: join(root, "site"),
+      manifestPath: postsManifestPath,
+    });
+
+    const siteManifest = SiteManifestSchema.parse(
+      JSON.parse(await readFile(join(root, ".generated/site.json"), "utf8")),
+    );
+    expect(siteManifest.generatedAt).toBe(postsManifest.generatedAt);
+    expect(siteManifest.themeTokens).toMatchObject({
+      primary: "#1f6658",
+      secondary: "#17352f",
+    });
+    expect(siteManifest.content.settings.logo).toMatch(
+      /^\/site-media\/logo\.[a-f0-9]{12}\.webp$/,
+    );
+    expect(siteManifest.content.home.hero.image).toMatch(
+      /^\/site-media\/hero\.[a-f0-9]{12}\.webp$/,
+    );
+    expect(siteManifest.content.home.services.items[0]?.image).toMatch(
+      /^\/site-media\/rent\.[a-f0-9]{12}\.webp$/,
+    );
+    await expect(
+      access(
+        join(root, "site/public", siteManifest.content.settings.logo.slice(1)),
+      ),
+    ).resolves.toBeUndefined();
+
+    const rss = await readFile(join(root, "site/public/rss.xml"), "utf8");
+    expect(rss).toContain(
+      `https://www.riyihome.com${siteManifest.content.settings.logo}`,
+    );
+  });
+
+  it("skips both media pipelines and preserves source paths when disabled", async () => {
+    const root = await fixture({ siteImages: true });
+    const siteManifestPath = join(root, "custom/site.json");
+    const postsManifest = await prepareContent({
+      contentDir: join(root, "content"),
+      siteDir: join(root, "site"),
+      manifestPath: join(root, ".generated/posts.json"),
+      siteManifestPath,
+      optimizeImages: false,
+    });
+
+    const siteManifest = SiteManifestSchema.parse(
+      JSON.parse(await readFile(siteManifestPath, "utf8")),
+    );
+    expect(postsManifest.posts[0]?.coverImg).toBe("/media/cover.png");
+    expect(siteManifest.content.settings.logo).toBe("/site-media/logo.png");
+    expect(siteManifest.content.home.hero.image).toBe("/site-media/hero.png");
+    expect(siteManifest.content.home.services.items[0]?.image).toBe(
+      "/site-media/rent.png",
+    );
+    await expect(
+      access(join(root, "site/public/site-media")),
     ).rejects.toMatchObject({ code: "ENOENT" });
   });
 

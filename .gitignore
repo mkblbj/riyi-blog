@@ -4,6 +4,7 @@ node_modules/
 site/posts/
 site/category/
 site/public/media/
+site/public/site-media/
 site/public/rss.xml
 site/.vitepress/cache/
 site/.vitepress/dist/

@@ -26,7 +26,9 @@ function toPosix(value: string): string {
 export async function optimizeMedia(
   inputDir: string,
   outputDir: string,
+  publicPrefix = "/media",
 ): Promise<MediaManifest> {
+  const normalizedPublicPrefix = `/${publicPrefix.replace(/^\/+|\/+$/g, "")}`;
   await rm(outputDir, { recursive: true, force: true });
   await mkdir(outputDir, { recursive: true });
   const sourceFiles = await glob(`**/*.{${IMAGE_EXTENSIONS.join(",")}}`, {
@@ -71,8 +73,8 @@ export async function optimizeMedia(
       .webp({ quality: 82 })
       .toFile(outputPath);
 
-    const originalPublicPath = `/media/${relativePath}`;
-    const publicPath = `/media/${outputRelative}`;
+    const originalPublicPath = `${normalizedPublicPrefix}/${relativePath}`;
+    const publicPath = `${normalizedPublicPrefix}/${outputRelative}`;
     paths.set(originalPublicPath, publicPath);
     files.push({ sourcePath, publicPath, outputPath });
   }
@@ -100,9 +102,9 @@ export function applyMediaManifest(
   if (!coverImg) {
     throw new Error(`${post.sourcePath}: missing cover image ${post.coverImg}`);
   }
-  const bodyMediaPaths = [
-    ...post.body.matchAll(/\/media\/[^)\s"'<>]+/g),
-  ].map((match) => match[0]);
+  const bodyMediaPaths = [...post.body.matchAll(/\/media\/[^)\s"'<>]+/g)].map(
+    (match) => match[0],
+  );
   const missingBodyPath = bodyMediaPaths.find((path) => !media.paths.has(path));
   if (missingBodyPath) {
     throw new Error(

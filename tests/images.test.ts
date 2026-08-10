@@ -37,6 +37,32 @@ describe("image pipeline", () => {
     await expect(access(join(input, "cover.png"))).resolves.toBeUndefined();
   });
 
+  it("uses a normalized public prefix for source and generated paths", async () => {
+    const root = await mkdtemp(join(tmpdir(), "riyi-site-images-"));
+    const input = join(root, "input");
+    const output = join(root, "output");
+    await mkdir(input, { recursive: true });
+    await sharp({
+      create: {
+        width: 80,
+        height: 45,
+        channels: 3,
+        background: "#d7c3a4",
+      },
+    })
+      .png()
+      .toFile(join(input, "hero.png"));
+
+    const manifest = await optimizeMedia(input, output, "site-media/");
+
+    expect(manifest.paths.get("/site-media/hero.png")).toMatch(
+      /^\/site-media\/hero\.[a-f0-9]{12}\.webp$/,
+    );
+    expect(manifest.files[0]?.publicPath).toMatch(
+      /^\/site-media\/hero\.[a-f0-9]{12}\.webp$/,
+    );
+  });
+
   it("rewrites cover and Markdown paths from the generated map", () => {
     const paths = new Map([
       ["/media/cover.png", "/media/cover.0123456789ab.webp"],

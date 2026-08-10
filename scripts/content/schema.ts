@@ -53,5 +53,6 @@ export interface PrepareOptions {
   contentDir: string;
   siteDir: string;
   manifestPath: string;
+  siteManifestPath?: string;
   optimizeImages?: boolean;
 }
