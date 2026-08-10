@@ -1,12 +1,33 @@
 import matter from "gray-matter";
+import {
+  validatePostCategoryReferences,
+  type Category,
+} from "../../src/site-content.js";
 import { LoadedPost, PublicPost } from "./schema.js";
 
-export function toPublicPost(post: LoadedPost): PublicPost {
-  const { authorName, status: _status, ...data } = post.data;
+export function toPublicPost(
+  post: LoadedPost,
+  categories: readonly Category[],
+): PublicPost {
+  validatePostCategoryReferences(
+    post.data.categories,
+    categories,
+    post.sourcePath,
+  );
+  const byId = new Map(categories.map((category) => [category.id, category]));
+  const {
+    authorName,
+    status: _status,
+    categories: storedCategoryIds,
+    ...data
+  } = post.data;
+  const categoryIds = [...storedCategoryIds];
   return {
     ...data,
+    categoryIds,
+    categories: categoryIds.map((id) => byId.get(id)!.name),
     author: { name: authorName },
-    permalink: `/posts/${data.id}/`,
+    permalink: `/posts/${post.data.id}/`,
     body: post.body,
     sourcePath: post.sourcePath,
   };
@@ -20,6 +41,7 @@ export function renderPost(post: PublicPost): string {
     title,
     description,
     coverImg,
+    categoryIds: _categoryIds,
     categories,
     tags,
     author,

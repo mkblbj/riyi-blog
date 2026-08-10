@@ -37,10 +37,7 @@ async function buildFixture() {
     join(distDir, "robots.txt"),
     "Sitemap: https://www.riyihome.com/sitemap.xml",
   );
-  await writeFile(
-    join(distDir, "404.html"),
-    "<html><body>404</body></html>",
-  );
+  await writeFile(join(distDir, "404.html"), "<html><body>404</body></html>");
   await writeFile(
     manifestPath,
     JSON.stringify({
@@ -55,7 +52,7 @@ async function buildFixture() {
       title: "草稿",
       description: "这是一篇不会进入任何公开构建产物的草稿文章。",
       coverImg: "/media/draft.png",
-      categories: ["租房指南"],
+      categories: ["11111111-1111-4111-8111-111111111111"],
       tags: [],
       authorName: "日宜房产",
       date: "2026-07-28T10:00:00+09:00",

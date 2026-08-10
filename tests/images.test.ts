@@ -43,11 +43,11 @@ describe("image pipeline", () => {
     ]);
     expect(
       rewriteMediaReferences(
-        "![东京住宅](/media/cover.png)\n<img src=\"/media/cover.png\" alt=\"住宅\">",
+        '![东京住宅](/media/cover.png)\n<img src="/media/cover.png" alt="住宅">',
         paths,
       ),
     ).toBe(
-      "![东京住宅](/media/cover.0123456789ab.webp)\n<img src=\"/media/cover.0123456789ab.webp\" alt=\"住宅\">",
+      '![东京住宅](/media/cover.0123456789ab.webp)\n<img src="/media/cover.0123456789ab.webp" alt="住宅">',
     );
   });
 
@@ -72,6 +72,7 @@ describe("image pipeline", () => {
           title: "图片检查",
           description: "正文中的本地图片不存在时，构建必须立即失败并指出路径。",
           coverImg: "/media/cover.png",
+          categoryIds: ["11111111-1111-4111-8111-111111111111"],
           categories: ["租房指南"],
           tags: [],
           author: { name: "日宜房产" },
@@ -79,8 +80,7 @@ describe("image pipeline", () => {
           top: false,
           permalink: "/posts/79f45644-f457-4b94-a288-44780fd8f199/",
           body: "![不存在的图片](/media/missing.png)",
-          sourcePath:
-            "content/posts/79f45644-f457-4b94-a288-44780fd8f199.md",
+          sourcePath: "content/posts/79f45644-f457-4b94-a288-44780fd8f199.md",
         },
         {
           paths: new Map([

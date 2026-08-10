@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { CATEGORIES } from "../../src/site.js";
 
 const stickySchema = z.preprocess(
   (value) => (value === "" || value === null ? undefined : value),
@@ -11,7 +10,7 @@ export const RawPostSchema = z.object({
   title: z.string().trim().min(1).max(120),
   description: z.string().trim().min(20).max(320),
   coverImg: z.string().regex(/^\/media\/[^\s]+$/),
-  categories: z.array(z.enum(CATEGORIES)).length(1),
+  categories: z.array(z.uuid()).length(1),
   tags: z.array(z.string().trim().min(1).max(40)).default([]),
   authorName: z.string().trim().min(1).max(60),
   date: z.iso.datetime({ offset: true }),
@@ -33,7 +32,8 @@ export interface PublicPost {
   title: string;
   description: string;
   coverImg: string;
-  categories: RawPost["categories"];
+  categoryIds: string[];
+  categories: string[];
   tags: string[];
   author: { name: string };
   date: string;

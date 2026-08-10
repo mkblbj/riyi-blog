@@ -24,8 +24,7 @@ describe("SEO", () => {
 
   it("builds canonical, Open Graph and BlogPosting data for an article", () => {
     const head = buildPageHead({
-      relativePath:
-        "posts/79f45644-f457-4b94-a288-44780fd8f199/index.md",
+      relativePath: "posts/79f45644-f457-4b94-a288-44780fd8f199/index.md",
       title: "欢迎来到日宜房产博客",
       description: "日宜房产博客的首篇介绍文章。",
       frontmatter: {
@@ -84,6 +83,7 @@ describe("SEO", () => {
           title: "欢迎来到日宜房产博客",
           description: "日宜房产博客的首篇介绍文章。",
           coverImg: "/media/cover.0123456789ab.webp",
+          categoryIds: ["66666666-6666-4666-8666-666666666666"],
           categories: ["公司动态"],
           tags: ["日宜房产"],
           author: { name: "日宜房产" },
@@ -92,13 +92,18 @@ describe("SEO", () => {
           sticky: 1,
           permalink: "/posts/79f45644-f457-4b94-a288-44780fd8f199/",
           body: "正文",
-          sourcePath:
-            "content/posts/79f45644-f457-4b94-a288-44780fd8f199.md",
+          sourcePath: "content/posts/79f45644-f457-4b94-a288-44780fd8f199.md",
         },
       ],
     };
     const output = join(root, "rss.xml");
-    await writeRss(manifest, output);
+    await writeRss(manifest, output, {
+      title: "日宜房产",
+      description:
+        "日宜房产提供日本房产租赁、买卖与安居服务，并整理区域选择、流程费用和日常生活的实用内容。",
+      logo: "",
+      url: "https://www.riyihome.com",
+    });
     const xml = await readFile(output, "utf8");
     expect(xml).toContain(
       "https://www.riyihome.com/posts/79f45644-f457-4b94-a288-44780fd8f199/",

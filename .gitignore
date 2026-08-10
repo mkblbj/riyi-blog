@@ -2,6 +2,7 @@ node_modules/
 .worktrees/
 .generated/
 site/posts/
+site/category/
 site/public/media/
 site/public/rss.xml
 site/.vitepress/cache/

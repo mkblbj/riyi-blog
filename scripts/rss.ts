@@ -1,36 +1,47 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { Feed } from "feed";
-import {
-  SITE_DESCRIPTION,
-  SITE_TITLE,
-  SITE_URL,
-} from "../src/site.js";
 import type { BuildManifest } from "./content/schema.js";
+
+interface RssIdentity {
+  title: string;
+  description: string;
+  logo: string;
+  url: string;
+}
 
 export async function writeRss(
   manifest: BuildManifest,
   outputPath: string,
+  { title, description, logo, url }: RssIdentity,
 ): Promise<void> {
+  const feedImage = new URL(logo || "/brand/og-default.png", url).toString();
   const feed = new Feed({
-    title: `${SITE_TITLE}资讯`,
-    description: SITE_DESCRIPTION,
-    id: SITE_URL,
-    link: SITE_URL,
+    title: `${title}资讯`,
+    description,
+    id: url,
+    link: url,
     language: "zh-CN",
-    image: `${SITE_URL}/brand/og-default.png`,
-    favicon: `${SITE_URL}/brand/og-default.png`,
-    copyright: `© ${new Date().getFullYear()} ${SITE_TITLE}`,
+    image: feedImage,
+    favicon: feedImage,
+    copyright: `© ${new Date().getFullYear()} ${title}`,
     updated: new Date(manifest.generatedAt),
-    feedLinks: { rss2: `${SITE_URL}/rss.xml` },
-    author: { name: SITE_TITLE, link: SITE_URL },
+    feedLinks: { rss2: new URL("/rss.xml", url).toString() },
+    author: { name: title, link: url },
+  });
+  feed.addExtension({
+    name: "author",
+    objects: {
+      name: { _text: title },
+      uri: { _text: url },
+    },
   });
 
   for (const post of manifest.posts) {
     feed.addItem({
       title: post.title,
-      id: `${SITE_URL}${post.permalink}`,
-      link: `${SITE_URL}${post.permalink}`,
+      id: new URL(post.permalink, url).toString(),
+      link: new URL(post.permalink, url).toString(),
       description: post.description,
       date: new Date(post.date),
       author: [{ name: post.author.name }],
@@ -38,7 +49,7 @@ export async function writeRss(
         ...post.categories.map((name) => ({ name })),
         ...post.tags.map((name) => ({ name })),
       ],
-      image: new URL(post.coverImg, SITE_URL).toString(),
+      image: new URL(post.coverImg, url).toString(),
     });
   }
 

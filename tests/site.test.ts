@@ -4,16 +4,12 @@ import { describe, expect, it } from "vitest";
 import { NAV_ITEMS } from "../src/navigation.js";
 import { PLATFORM_LINKS } from "../src/platform-links.js";
 import {
-  CATEGORIES,
   PLATFORM_URL,
   SITE_DESCRIPTION,
   SITE_TITLE,
   SITE_URL,
 } from "../src/site.js";
-import {
-  teekConfig,
-  teekVitePlugins,
-} from "../site/.vitepress/teek-config.js";
+import { teekConfig, teekVitePlugins } from "../site/.vitepress/teek-config.js";
 
 describe("site contract", () => {
   it("keeps the blog and property platform on separate hosts", () => {
@@ -27,25 +23,12 @@ describe("site contract", () => {
   it("uses only HTTPS business entry points", () => {
     expect(PLATFORM_LINKS).toEqual({
       home: "https://riyihome.com",
-      submitDemand:
-        "https://riyihome.com/index.html#/pages/project/advisory",
-      wechatConsult:
-        "https://work.weixin.qq.com/kfid/kfcc5d6c8170e5733d0",
+      submitDemand: "https://riyihome.com/index.html#/pages/project/advisory",
+      wechatConsult: "https://work.weixin.qq.com/kfid/kfcc5d6c8170e5733d0",
     });
     for (const url of Object.values(PLATFORM_LINKS)) {
       expect(new URL(url).protocol).toBe("https:");
     }
-  });
-
-  it("publishes the approved fixed categories", () => {
-    expect(CATEGORIES).toEqual([
-      "租房指南",
-      "买房指南",
-      "日本生活",
-      "区域介绍",
-      "房产政策",
-      "公司动态",
-    ]);
   });
 
   it("uses the approved public navigation", () => {
@@ -105,12 +88,8 @@ describe("site contract", () => {
           : "",
       );
 
-    expect(pluginNames).not.toContain(
-      "vite-plugin-vitepress-auto-permalink",
-    );
-    expect(pluginNames).not.toContain(
-      "vite-plugin-vitepress-use-permalink",
-    );
+    expect(pluginNames).not.toContain("vite-plugin-vitepress-auto-permalink");
+    expect(pluginNames).not.toContain("vite-plugin-vitepress-use-permalink");
   });
 
   it("keeps generated post folders out of the public sidebar", () => {
@@ -122,13 +101,8 @@ describe("site contract", () => {
   });
 
   it("selects a Simplified Chinese font before Japanese fallbacks", async () => {
-    const css = await readFile(
-      "site/.vitepress/theme/custom.css",
-      "utf8",
-    );
-    const declaration = css.match(
-      /--vp-font-family-base:\s*([^;]+);/,
-    )?.[1];
+    const css = await readFile("site/.vitepress/theme/custom.css", "utf8");
+    const declaration = css.match(/--vp-font-family-base:\s*([^;]+);/)?.[1];
     const families = declaration
       ?.split(",")
       .map((family) => family.trim().replace(/^["']|["']$/g, ""));

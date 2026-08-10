@@ -1,9 +1,13 @@
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { resolveSiteContent } from "../../src/site-content.js";
+import { SITE_URL } from "../../src/site.js";
 import { writeRss } from "../rss.js";
 import { applyMediaManifest, optimizeMedia } from "./images.js";
 import { loadPosts } from "./load-posts.js";
+import { loadSiteContent } from "./load-site.js";
+import { renderCategoryPage } from "./render-category.js";
 import { renderPost, toPublicPost } from "./render-post.js";
 import { BuildManifest, PrepareOptions } from "./schema.js";
 
@@ -17,11 +21,15 @@ export async function prepareContent(
     optimizeImages: true,
   },
 ): Promise<BuildManifest> {
-  const postsOutput = join(options.siteDir, "posts");
-  await rm(postsOutput, { recursive: true, force: true });
-  await mkdir(postsOutput, { recursive: true });
-
+  const siteContent = resolveSiteContent(loadSiteContent(options.contentDir));
   const loaded = await loadPosts(options.contentDir);
+  const postsOutput = join(options.siteDir, "posts");
+  const categoriesOutput = join(options.siteDir, "category");
+  await rm(postsOutput, { recursive: true, force: true });
+  await rm(categoriesOutput, { recursive: true, force: true });
+  await mkdir(postsOutput, { recursive: true });
+  await mkdir(categoriesOutput, { recursive: true });
+
   const media =
     options.optimizeImages === false
       ? undefined
@@ -31,7 +39,7 @@ export async function prepareContent(
         );
   const posts = loaded
     .filter((post) => post.data.status === "published")
-    .map(toPublicPost)
+    .map((post) => toPublicPost(post, siteContent.categories))
     .map((post) => (media ? applyMediaManifest(post, media) : post))
     .sort((left, right) => right.date.localeCompare(left.date));
 
@@ -39,6 +47,14 @@ export async function prepareContent(
     const output = join(postsOutput, post.id, "index.md");
     await mkdir(dirname(output), { recursive: true });
     await writeFile(output, renderPost(post), "utf8");
+  }
+
+  for (const category of siteContent.categories.filter(
+    ({ enabled }) => enabled,
+  )) {
+    const output = join(categoriesOutput, category.slug, "index.md");
+    await mkdir(dirname(output), { recursive: true });
+    await writeFile(output, renderCategoryPage(category, posts), "utf8");
   }
 
   const manifest: BuildManifest = {
@@ -51,7 +67,12 @@ export async function prepareContent(
     JSON.stringify(manifest, null, 2),
     "utf8",
   );
-  await writeRss(manifest, join(options.siteDir, "public/rss.xml"));
+  await writeRss(manifest, join(options.siteDir, "public/rss.xml"), {
+    title: siteContent.settings.siteName,
+    description: siteContent.settings.siteDescription,
+    logo: siteContent.settings.logo,
+    url: SITE_URL,
+  });
   return manifest;
 }
 
