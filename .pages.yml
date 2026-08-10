@@ -5,6 +5,12 @@ media:
     output: /media
     rename: random
     extensions: [jpg, jpeg, png, webp]
+  - name: site_images
+    label: 官网图片
+    input: content/site-media
+    output: /site-media
+    rename: random
+    extensions: [jpg, jpeg, png, webp]
 
 content:
   - name: posts
@@ -61,25 +67,16 @@ content:
           rename: random
       - name: categories
         label: 分类
-        type: select
+        type: reference
         required: true
+        description: 请选择已启用的分类；停用分类不能用于新文章或迁移文章。
         options:
+          collection: categories
           multiple: true
           min: 1
           max: 1
-          values:
-            - name: 租房指南
-              label: 租房指南
-            - name: 买房指南
-              label: 买房指南
-            - name: 日本生活
-              label: 日本生活
-            - name: 区域介绍
-              label: 区域介绍
-            - name: 房产政策
-              label: 房产政策
-            - name: 公司动态
-              label: 公司动态
+          value: "{fields.id}"
+          label: "{fields.name}"
       - name: tags
         label: 标签
         type: string
@@ -132,6 +129,520 @@ content:
           switcher: true
           media: article_images
           rename: random
+
+  - name: official_site
+    label: 官网管理
+    type: group
+    items:
+      - name: site_settings
+        label: 品牌与外观
+        type: file
+        path: content/site/settings.yml
+        format: yaml
+        operations:
+          create: false
+          rename: false
+          delete: false
+        fields:
+          - name: schemaVersion
+            label: 内容版本
+            type: number
+            required: true
+            readonly: true
+          - name: layoutPreset
+            label: 布局版本
+            type: string
+            required: true
+            readonly: true
+          - name: siteName
+            label: 网站名称
+            type: string
+            required: true
+          - name: siteDescription
+            label: 网站描述
+            type: text
+            required: true
+          - name: logo
+            label: Logo
+            type: image
+            options:
+              media: site_images
+              rename: random
+          - name: primaryColor
+            label: 主品牌色
+            type: string
+            required: true
+            pattern:
+              regex: "^#[0-9A-Fa-f]{6}$"
+              message: 请输入六位颜色，例如 #1f6658
+          - name: secondaryColor
+            label: 辅助品牌色
+            type: string
+            required: true
+            pattern:
+              regex: "^#[0-9A-Fa-f]{6}$"
+              message: 请输入六位颜色，例如 #1f6658
+
+      - name: home_content
+        label: 首页内容
+        type: file
+        path: content/site/home.yml
+        format: yaml
+        operations:
+          create: false
+          rename: false
+          delete: false
+        fields:
+          - name: hero
+            label: 首页首屏
+            type: object
+            fields:
+              - name: title
+                label: 标题
+                type: string
+                required: true
+              - name: description
+                label: 描述
+                type: text
+                required: true
+              - name: image
+                label: Banner 图片
+                type: image
+                options:
+                  media: site_images
+                  rename: random
+              - name: imageAlt
+                label: Banner 图片说明
+                type: string
+              - name: quickLinks
+                label: 快捷入口
+                type: object
+                list: true
+                options:
+                  min: 3
+                  max: 3
+                fields:
+                  - name: id
+                    label: 系统编号
+                    type: string
+                    required: true
+                    readonly: true
+                  - name: enabled
+                    label: 显示
+                    type: boolean
+                    required: true
+                  - name: title
+                    label: 标题
+                    type: string
+                    required: true
+                  - name: description
+                    label: 描述
+                    type: text
+                    required: true
+                  - name: kind
+                    label: 链接类型
+                    type: select
+                    required: true
+                    options:
+                      values:
+                        - name: category
+                          label: 文章分类
+                        - name: external
+                          label: 外部链接
+                  - name: categoryId
+                    label: 文章分类
+                    type: reference
+                    description: 请选择已启用的分类。
+                    options:
+                      collection: categories
+                      value: "{fields.id}"
+                      label: "{fields.name}"
+                  - name: href
+                    label: 链接地址
+                    type: string
+                  - name: order
+                    label: 排列顺序
+                    type: number
+                    required: true
+                    options:
+                      min: 0
+
+          - name: appDownload
+            label: App 下载区
+            type: object
+            fields:
+              - name: enabled
+                label: 显示
+                type: boolean
+                required: true
+              - name: eyebrow
+                label: 眉题
+                type: string
+              - name: title
+                label: 标题
+                type: string
+                required: true
+              - name: description
+                label: 描述
+                type: text
+                required: true
+              - name: appStoreUrl
+                label: App Store 链接
+                type: string
+                required: true
+              - name: googlePlayUrl
+                label: Google Play 链接
+                type: string
+                required: true
+              - name: wechatMiniProgram
+                label: 微信小程序口令
+                type: string
+                required: true
+
+          - name: services
+            label: 核心服务区
+            type: object
+            fields:
+              - name: eyebrow
+                label: 眉题
+                type: string
+              - name: title
+                label: 标题
+                type: string
+                required: true
+              - name: description
+                label: 描述
+                type: text
+                required: true
+              - name: items
+                label: 服务项目
+                type: object
+                list: true
+                options:
+                  min: 3
+                  max: 3
+                fields:
+                  - name: id
+                    label: 系统编号
+                    type: string
+                    required: true
+                    readonly: true
+                  - name: enabled
+                    label: 显示
+                    type: boolean
+                    required: true
+                  - name: title
+                    label: 标题
+                    type: string
+                    required: true
+                  - name: description
+                    label: 描述
+                    type: text
+                    required: true
+                  - name: image
+                    label: 配图
+                    type: image
+                    options:
+                      media: site_images
+                      rename: random
+                  - name: imageAlt
+                    label: 配图说明
+                    type: string
+                  - name: linkLabel
+                    label: 链接文字
+                    type: string
+                    required: true
+                  - name: kind
+                    label: 链接类型
+                    type: select
+                    required: true
+                    options:
+                      values:
+                        - name: category
+                          label: 文章分类
+                        - name: internal
+                          label: 官网页面
+                        - name: external
+                          label: 外部链接
+                  - name: categoryId
+                    label: 文章分类
+                    type: reference
+                    description: 请选择已启用的分类。
+                    options:
+                      collection: categories
+                      value: "{fields.id}"
+                      label: "{fields.name}"
+                  - name: href
+                    label: 链接地址
+                    type: string
+                  - name: order
+                    label: 排列顺序
+                    type: number
+                    required: true
+                    options:
+                      min: 0
+
+          - name: advantages
+            label: 日宜优势区
+            type: object
+            fields:
+              - name: enabled
+                label: 显示
+                type: boolean
+                required: true
+              - name: eyebrow
+                label: 眉题
+                type: string
+              - name: title
+                label: 标题
+                type: string
+                required: true
+              - name: description
+                label: 描述
+                type: text
+                required: true
+              - name: items
+                label: 优势项目
+                type: object
+                list: true
+                options:
+                  min: 4
+                  max: 4
+                fields:
+                  - name: id
+                    label: 系统编号
+                    type: string
+                    required: true
+                    readonly: true
+                  - name: enabled
+                    label: 显示
+                    type: boolean
+                    required: true
+                  - name: title
+                    label: 标题
+                    type: string
+                    required: true
+                  - name: description
+                    label: 描述
+                    type: text
+                    required: true
+                  - name: order
+                    label: 排列顺序
+                    type: number
+                    required: true
+                    options:
+                      min: 0
+
+          - name: actions
+            label: 咨询行动区
+            type: object
+            fields:
+              - name: eyebrow
+                label: 眉题
+                type: string
+              - name: title
+                label: 标题
+                type: string
+                required: true
+              - name: description
+                label: 描述
+                type: text
+                required: true
+              - name: items
+                label: 行动项目
+                type: object
+                list: true
+                options:
+                  min: 3
+                  max: 3
+                fields:
+                  - name: id
+                    label: 系统编号
+                    type: string
+                    required: true
+                    readonly: true
+                  - name: enabled
+                    label: 显示
+                    type: boolean
+                    required: true
+                  - name: label
+                    label: 按钮文字
+                    type: string
+                    required: true
+                  - name: description
+                    label: 描述
+                    type: text
+                    required: true
+                  - name: tone
+                    label: 按钮样式
+                    type: select
+                    required: true
+                    options:
+                      values:
+                        - name: primary
+                          label: 主按钮
+                        - name: secondary
+                          label: 次按钮
+                        - name: quiet
+                          label: 轻按钮
+                  - name: href
+                    label: 链接地址
+                    type: string
+                    required: true
+                  - name: order
+                    label: 排列顺序
+                    type: number
+                    required: true
+                    options:
+                      min: 0
+
+          - name: articles
+            label: 文章展示区
+            type: object
+            fields:
+              - name: eyebrow
+                label: 眉题
+                type: string
+              - name: title
+                label: 标题
+                type: string
+                required: true
+              - name: description
+                label: 描述
+                type: text
+                required: true
+
+      - name: navigation
+        label: 导航菜单
+        type: file
+        path: content/site/navigation.yml
+        format: yaml
+        operations:
+          create: false
+          rename: false
+          delete: false
+        fields:
+          - name: home
+            label: 系统首页
+            type: object
+            required: true
+            fields:
+              - name: label
+                label: 显示名称
+                type: string
+                required: true
+              - name: order
+                label: 排列顺序
+                type: number
+                required: true
+                options:
+                  min: 0
+          - name: items
+            label: 导航项目
+            type: object
+            list: true
+            fields:
+              - name: id
+                label: 导航编号
+                type: uuid
+                required: true
+                readonly: true
+                options:
+                  editable: false
+                  generate: false
+              - name: label
+                label: 显示名称
+                type: string
+                required: true
+              - name: kind
+                label: 链接类型
+                type: select
+                required: true
+                options:
+                  values:
+                    - name: category
+                      label: 文章分类
+                    - name: internal
+                      label: 官网页面
+                    - name: external
+                      label: 外部链接
+              - name: categoryId
+                label: 文章分类
+                type: reference
+                description: 请选择已启用的分类。
+                options:
+                  collection: categories
+                  value: "{fields.id}"
+                  label: "{fields.name}"
+              - name: href
+                label: 链接地址
+                type: string
+              - name: visible
+                label: 显示
+                type: boolean
+                required: true
+              - name: newWindow
+                label: 新窗口打开
+                type: boolean
+                required: true
+              - name: order
+                label: 排列顺序
+                type: number
+                required: true
+                options:
+                  min: 0
+
+      - name: categories
+        label: 文章分类
+        type: collection
+        path: content/categories
+        format: yaml
+        filename:
+          template: "{id}.yml"
+          field: false
+        operations:
+          create: true
+          rename: false
+          delete: false
+        view:
+          fields: [name, enabled, order]
+          primary: name
+          sort: [order, name]
+          search: [name, description]
+          default:
+            sort: order
+            order: asc
+        fields:
+          - name: id
+            label: 分类编号
+            type: uuid
+            required: true
+            readonly: true
+            options:
+              editable: false
+              generate: false
+          - name: slug
+            label: 分类网址标识
+            type: string
+            hidden: true
+          - name: name
+            label: 分类名称
+            type: string
+            required: true
+          - name: description
+            label: 分类说明
+            type: text
+          - name: enabled
+            label: 已启用
+            type: boolean
+            required: true
+            default: true
+          - name: order
+            label: 排列顺序
+            type: number
+            required: true
+            options:
+              min: 0
 
 settings:
   hide: true

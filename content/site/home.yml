@@ -1,0 +1,47 @@
+hero:
+  title: 日宜房产
+  description: 日本找房，就上日宜。找房服务与实用内容，都在这里。
+  image: ""
+  imageAlt: ""
+  quickLinks:
+    - { id: rent, enabled: true, title: 租房指南, description: 理解费用、审查与签约流程, kind: category, categoryId: 11111111-1111-4111-8111-111111111111, href: "", order: 10 }
+    - { id: purchase, enabled: true, title: 买房指南, description: 整理购房、贷款与持有成本, kind: category, categoryId: 22222222-2222-4222-8222-222222222222, href: "", order: 20 }
+    - { id: listings, enabled: true, title: 查看日宜房源, description: 返回日宜房产平台寻找合适房源, kind: external, categoryId: "", href: https://riyihome.com, order: 30 }
+appDownload:
+  enabled: true
+  eyebrow: 随时随地找房
+  title: 下载日宜找房 App
+  description: 浏览日本房源、短视频看房和区域信息，也可以直接使用微信小程序。
+  appStoreUrl: https://apps.apple.com/jp/app/%E6%97%A5%E5%AE%9C%E6%89%BE%E6%88%BF/id6756088611
+  googlePlayUrl: https://play.google.com/store/apps/details?id=com.rykj.riyizhaofang
+  wechatMiniProgram: "#小程序://日宜找房/eFzVt03INd0YNma"
+services:
+  eyebrow: 从找房到安居
+  title: 看懂选择，再决定下一步
+  description: 日宜把日本房产服务与实用内容放在同一个官网里。你可以先了解流程、区域与生活条件，也可以直接开始找房。
+  items:
+    - { id: rent, enabled: true, title: 日本租房, description: 从初期费用、入住审查到签约流程，把容易忽略的细节提前说明。, image: "", imageAlt: "", linkLabel: 阅读租房指南, kind: category, categoryId: 11111111-1111-4111-8111-111111111111, href: "", order: 10 }
+    - { id: purchase, enabled: true, title: 日本买房, description: 围绕区域、预算、贷款与持有成本，帮助你建立更完整的判断。, image: "", imageAlt: "", linkLabel: 阅读买房指南, kind: category, categoryId: 22222222-2222-4222-8222-222222222222, href: "", order: 20 }
+    - { id: study, enabled: true, title: 留学安居, description: 结合学校、通勤与日常生活需求，理解房子之外真正影响居住的条件。, image: "", imageAlt: "", linkLabel: 了解日本生活, kind: category, categoryId: 33333333-3333-4333-8333-333333333333, href: "", order: 30 }
+advantages:
+  enabled: true
+  eyebrow: 日宜的方式
+  title: 让找房信息更直观、更清楚
+  description: 房子不是一串参数。我们希望把空间、位置和真实生活条件一起说明，降低比较与沟通成本。
+  items:
+    - { id: video, enabled: true, title: 短视频了解房源, description: 通过更直观的内容了解采光、动线与空间，先建立判断，再安排下一步。, order: 10 }
+    - { id: commute, enabled: true, title: 结合通勤与生活圈筛选, description: 不只看地址和面积，也把学校、通勤、配套与日常节奏放进选择里。, order: 20 }
+    - { id: verify, enabled: true, title: 整理与核验房源信息, description: 减少重复、过期和难以理解的信息，让重要条件更容易比较。, order: 30 }
+    - { id: follow, enabled: true, title: 按需求持续关注, description: 告诉我们预算、区域和入住计划，持续关注更贴近需求的房源机会。, order: 40 }
+actions:
+  eyebrow: 准备开始找房？
+  title: 把你的计划告诉日宜
+  description: 先浏览房源，或直接说明预算、区域与入住时间。
+  items:
+    - { id: listings, enabled: true, label: 查看房源, description: 进入日宜房产平台, tone: primary, href: https://riyihome.com, order: 10 }
+    - { id: demand, enabled: true, label: 提交需求, description: 说明预算与找房计划, tone: secondary, href: "https://riyihome.com/index.html#/pages/project/advisory", order: 20 }
+    - { id: wechat, enabled: true, label: 微信咨询, description: 与日宜顾问进一步沟通, tone: quiet, href: https://work.weixin.qq.com/kfid/kfcc5d6c8170e5733d0, order: 30 }
+articles:
+  eyebrow: 日宜内容
+  title: 最新房产资讯
+  description: 持续整理日本租房、买房、区域选择与日常生活中的实用信息。

@@ -1,0 +1,52 @@
+home:
+  label: 首页
+  order: 0
+items:
+  - id: 71000000-0000-4000-8000-000000000001
+    label: 租房指南
+    kind: category
+    categoryId: 11111111-1111-4111-8111-111111111111
+    href: ""
+    visible: true
+    newWindow: false
+    order: 10
+  - id: 71000000-0000-4000-8000-000000000002
+    label: 买房指南
+    kind: category
+    categoryId: 22222222-2222-4222-8222-222222222222
+    href: ""
+    visible: true
+    newWindow: false
+    order: 20
+  - id: 71000000-0000-4000-8000-000000000003
+    label: 日本生活
+    kind: category
+    categoryId: 33333333-3333-4333-8333-333333333333
+    href: ""
+    visible: true
+    newWindow: false
+    order: 30
+  - id: 71000000-0000-4000-8000-000000000004
+    label: 区域介绍
+    kind: category
+    categoryId: 44444444-4444-4444-8444-444444444444
+    href: ""
+    visible: true
+    newWindow: false
+    order: 40
+  - id: 71000000-0000-4000-8000-000000000005
+    label: 关于日宜
+    kind: internal
+    categoryId: ""
+    href: /about/
+    visible: true
+    newWindow: false
+    order: 50
+  - id: 71000000-0000-4000-8000-000000000006
+    label: 查看房源
+    kind: external
+    categoryId: ""
+    href: https://riyihome.com
+    visible: true
+    newWindow: true
+    order: 60
