@@ -371,6 +371,30 @@ describe("site content", () => {
     ).toThrow("content/site/home.yml: invalid internal target");
   });
 
+  it("rejects backslashes and control characters in internal targets", () => {
+    expect(() =>
+      resolveLinkTarget(
+        { kind: "internal", categoryId: "", href: "/\\evil.example/path" },
+        enabledCategories,
+        "content/site/home.yml",
+      ),
+    ).toThrow("content/site/home.yml: invalid internal target");
+    expect(() =>
+      resolveLinkTarget(
+        { kind: "internal", categoryId: "", href: "/about/\u0000" },
+        enabledCategories,
+        "content/site/home.yml",
+      ),
+    ).toThrow("content/site/home.yml: invalid internal target");
+    expect(() =>
+      resolveLinkTarget(
+        { kind: "internal", categoryId: "", href: "/about/\u0085" },
+        enabledCategories,
+        "content/site/home.yml",
+      ),
+    ).toThrow("content/site/home.yml: invalid internal target");
+  });
+
   it("rejects duplicate category UUIDs, slugs, and order values", async () => {
     const root = await siteFixture();
     const categoriesDir = join(root, "content/categories");
@@ -477,6 +501,31 @@ describe("site content", () => {
     );
     expect(() => loadSiteContent(join(root, "content"))).toThrow(
       "content/site/settings.yml:",
+    );
+  });
+
+  it("rejects unknown settings fields", async () => {
+    const root = await siteFixture();
+    await writeFile(
+      join(root, "content/site/settings.yml"),
+      stringify({ ...settings, customCss: "body { display: none; }" }),
+    );
+    expect(() => loadSiteContent(join(root, "content"))).toThrow(
+      "content/site/settings.yml:",
+    );
+  });
+
+  it("rejects unknown nested home fields", async () => {
+    const root = await siteFixture();
+    await writeFile(
+      join(root, "content/site/home.yml"),
+      stringify({
+        ...home,
+        hero: { ...home.hero, fontFamily: "serif" },
+      }),
+    );
+    expect(() => loadSiteContent(join(root, "content"))).toThrow(
+      "content/site/home.yml:",
     );
   });
 });

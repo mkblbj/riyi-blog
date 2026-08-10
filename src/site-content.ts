@@ -12,13 +12,13 @@ const httpsUrl = z
   .url()
   .refine((value) => new URL(value).protocol === "https:");
 
-export const LinkTargetSchema = z.object({
+export const LinkTargetSchema = z.strictObject({
   kind: z.enum(["category", "internal", "external"]),
   categoryId: z.union([z.literal(""), uuid]).default(""),
   href: z.string().trim().default(""),
 });
 
-export const CategorySourceSchema = z.object({
+export const CategorySourceSchema = z.strictObject({
   id: uuid,
   slug: z
     .string()
@@ -34,7 +34,7 @@ export const CategorySchema = CategorySourceSchema.extend({
   slug: z.string().regex(/^[a-z0-9-]+$/),
 });
 
-export const SiteSettingsSchema = z.object({
+export const SiteSettingsSchema = z.strictObject({
   schemaVersion: z.literal(1),
   layoutPreset: z.literal("official-v1"),
   siteName: shortText,
@@ -50,7 +50,7 @@ const ordered = {
 };
 const target = LinkTargetSchema.shape;
 
-const QuickLinkSchema = z.object({
+const QuickLinkSchema = z.strictObject({
   id: z.enum(["rent", "purchase", "listings"]),
   ...ordered,
   title: shortText,
@@ -58,7 +58,7 @@ const QuickLinkSchema = z.object({
   ...target,
 });
 
-const ServiceSchema = z.object({
+const ServiceSchema = z.strictObject({
   id: z.enum(["rent", "purchase", "study"]),
   ...ordered,
   title: shortText,
@@ -69,14 +69,14 @@ const ServiceSchema = z.object({
   ...target,
 });
 
-const AdvantageSchema = z.object({
+const AdvantageSchema = z.strictObject({
   id: z.enum(["video", "commute", "verify", "follow"]),
   ...ordered,
   title: shortText,
   description: longText,
 });
 
-const ActionSchema = z.object({
+const ActionSchema = z.strictObject({
   id: z.enum(["listings", "demand", "wechat"]),
   ...ordered,
   label: shortText,
@@ -85,15 +85,15 @@ const ActionSchema = z.object({
   href: httpsUrl,
 });
 
-export const HomeContentSchema = z.object({
-  hero: z.object({
+export const HomeContentSchema = z.strictObject({
+  hero: z.strictObject({
     title: shortText,
     description: longText,
     image: optionalSiteImage,
     imageAlt: z.string().trim().max(160).default(""),
     quickLinks: z.array(QuickLinkSchema).length(3),
   }),
-  appDownload: z.object({
+  appDownload: z.strictObject({
     enabled: z.boolean(),
     eyebrow: shortText,
     title: shortText,
@@ -102,39 +102,39 @@ export const HomeContentSchema = z.object({
     googlePlayUrl: httpsUrl,
     wechatMiniProgram: z.string().regex(/^#小程序:\/\/[^/\s]+\/[A-Za-z0-9]+$/),
   }),
-  services: z.object({
+  services: z.strictObject({
     eyebrow: shortText,
     title: shortText,
     description: longText,
     items: z.array(ServiceSchema).length(3),
   }),
-  advantages: z.object({
+  advantages: z.strictObject({
     enabled: z.boolean(),
     eyebrow: shortText,
     title: shortText,
     description: longText,
     items: z.array(AdvantageSchema).length(4),
   }),
-  actions: z.object({
+  actions: z.strictObject({
     eyebrow: shortText,
     title: shortText,
     description: longText,
     items: z.array(ActionSchema).length(3),
   }),
-  articles: z.object({
+  articles: z.strictObject({
     eyebrow: shortText,
     title: shortText,
     description: longText,
   }),
 });
 
-export const NavigationSchema = z.object({
-  home: z.object({
+export const NavigationSchema = z.strictObject({
+  home: z.strictObject({
     label: shortText,
     order: z.number().int().nonnegative(),
   }),
   items: z.array(
-    z.object({
+    z.strictObject({
       id: uuid,
       label: shortText,
       kind: z.enum(["category", "internal", "external"]),
@@ -225,6 +225,22 @@ function isHttpsUrl(value: string): boolean {
   }
 }
 
+const internalLinkOrigin = "https://site-content.invalid";
+
+function isInternalUrl(value: string): boolean {
+  if (
+    !/^\/(?!\/)/.test(value) ||
+    /[\\\u0000-\u001f\u007f-\u009f]/.test(value)
+  ) {
+    return false;
+  }
+  try {
+    return new URL(value, internalLinkOrigin).origin === internalLinkOrigin;
+  } catch {
+    return false;
+  }
+}
+
 export function resolveLinkTarget(
   targetValue: LinkTarget,
   categories: readonly Category[],
@@ -244,7 +260,7 @@ export function resolveLinkTarget(
     }
     return { href: `/category/${category.slug}/`, external: false };
   }
-  if (targetValue.kind === "internal" && /^\/(?!\/)/.test(targetValue.href)) {
+  if (targetValue.kind === "internal" && isInternalUrl(targetValue.href)) {
     return { href: targetValue.href, external: false };
   }
   if (targetValue.kind === "external" && isHttpsUrl(targetValue.href)) {
