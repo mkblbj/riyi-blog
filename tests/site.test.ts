@@ -15,7 +15,11 @@ import { PLATFORM_LINKS } from "../src/platform-links.js";
 import { SiteManifestSchema, type SiteManifest } from "../src/site-content.js";
 import { PLATFORM_URL, SITE_URL } from "../src/site.js";
 import siteConfig from "../site/.vitepress/config.js";
-import { teekConfig, teekVitePlugins } from "../site/.vitepress/teek-config.js";
+import {
+  buildTeekBanner,
+  teekConfig,
+  teekVitePlugins,
+} from "../site/.vitepress/teek-config.js";
 
 const runtimeManifest = SiteManifestSchema.parse(
   JSON.parse(readFileSync(".generated/site.json", "utf8")),
@@ -76,12 +80,12 @@ describe("site contract", () => {
     });
   });
 
-  it("reports the generated manifest path instead of masking invalid JSON", async () => {
+  it("reports the generated manifest path for schema-invalid JSON", async () => {
     const root = await mkdtemp(join(tmpdir(), "riyi-runtime-site-"));
     const generatedDir = join(root, ".generated");
     const manifestPath = join(generatedDir, "site.json");
     await mkdir(generatedDir, { recursive: true });
-    await writeFile(manifestPath, "{ invalid json", "utf8");
+    await writeFile(manifestPath, "{}", "utf8");
     const loadRuntimeSiteManifest = await runtimeManifestLoader();
 
     expect(() => loadRuntimeSiteManifest(root)).toThrow(manifestPath);
@@ -129,13 +133,37 @@ describe("site contract", () => {
     });
     expect(teekTheme.banner).toMatchObject({
       name: site.home.hero.title,
-      bgStyle: site.home.hero.image ? "partImg" : "pure",
-      pureBgColor: site.settings.secondaryColor,
       textColor: runtimeManifest.themeTokens.onSecondary,
       description: [site.home.hero.description],
       features: expectedFeatures,
     });
     expect(teekTheme.footerInfo.copyright.suffix).toBe(site.settings.siteName);
+  });
+
+  it("uses the configured hero image for a partial-image banner", () => {
+    const manifestWithHeroImage = structuredClone(runtimeManifest);
+    manifestWithHeroImage.content.home.hero.image =
+      "/site-media/customer-hero.0123456789ab.webp";
+    const banner = buildTeekBanner(manifestWithHeroImage);
+
+    expect(banner).toMatchObject({
+      bgStyle: "partImg",
+      imgSrc: "/site-media/customer-hero.0123456789ab.webp",
+    });
+    expect(banner).not.toHaveProperty("pureBgColor");
+  });
+
+  it("uses the secondary color for a pure banner without a hero image", () => {
+    const manifestWithoutHeroImage = structuredClone(runtimeManifest);
+    manifestWithoutHeroImage.content.settings.secondaryColor = "#345678";
+    manifestWithoutHeroImage.content.home.hero.image = "";
+    const banner = buildTeekBanner(manifestWithoutHeroImage);
+
+    expect(banner).toMatchObject({
+      bgStyle: "pure",
+      pureBgColor: "#345678",
+    });
+    expect(banner).not.toHaveProperty("imgSrc");
   });
 
   it("overrides stale homepage frontmatter with runtime identity", async () => {
@@ -164,16 +192,6 @@ describe("site contract", () => {
         "site/privacy/index.md",
         "site/404.md",
       ].map((path) => expect(access(path)).resolves.toBeUndefined()),
-    );
-  });
-
-  it("uses the official-site identity on the homepage", async () => {
-    const source = await readFile("site/index.md", "utf8");
-    const { data } = matter(source);
-
-    expect(data.title).toBe(runtimeManifest.content.settings.siteName);
-    expect(data.description).toBe(
-      runtimeManifest.content.settings.siteDescription,
     );
   });
 

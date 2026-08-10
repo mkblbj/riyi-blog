@@ -1,15 +1,38 @@
 import { defineTeekConfig } from "vitepress-theme-teek/config";
 import { PLATFORM_LINKS } from "../../src/platform-links.js";
+import type { SiteManifest } from "../../src/site-content.js";
 import { runtimeSiteManifest as siteManifest } from "./site-manifest.js";
 
 const site = siteManifest.content;
-const hero = site.home.hero;
-const bannerBackground = hero.image
-  ? { bgStyle: "partImg" as const, imgSrc: hero.image }
-  : {
-      bgStyle: "pure" as const,
-      pureBgColor: site.settings.secondaryColor,
-    };
+
+export function buildTeekBanner(siteManifest: SiteManifest) {
+  const site = siteManifest.content;
+  const hero = site.home.hero;
+  const background = hero.image
+    ? { bgStyle: "partImg" as const, imgSrc: hero.image }
+    : {
+        bgStyle: "pure" as const,
+        pureBgColor: site.settings.secondaryColor,
+      };
+
+  return {
+    enabled: true,
+    name: hero.title,
+    ...background,
+    textColor: siteManifest.themeTokens.onSecondary,
+    descStyle: "default",
+    description: [hero.description],
+    imgWaves: true,
+    features: hero.quickLinks
+      .filter(({ enabled }) => enabled)
+      .sort((left, right) => left.order - right.order)
+      .map(({ title, description, href }) => ({
+        title,
+        details: description,
+        link: href,
+      })),
+  };
+}
 
 export const teekVitePlugins = {
   permalink: false,
@@ -24,23 +47,7 @@ export const teekConfig = defineTeekConfig({
   loading: false,
   homeCardListPosition: "right",
   author: { name: site.settings.siteName, link: PLATFORM_LINKS.home },
-  banner: {
-    enabled: true,
-    name: hero.title,
-    ...bannerBackground,
-    textColor: siteManifest.themeTokens.onSecondary,
-    descStyle: "default",
-    description: [hero.description],
-    imgWaves: true,
-    features: hero.quickLinks
-      .filter(({ enabled }) => enabled)
-      .sort((left, right) => left.order - right.order)
-      .map(({ title, description, href }) => ({
-        title,
-        details: description,
-        link: href,
-      })),
-  },
+  banner: buildTeekBanner(siteManifest),
   post: {
     postStyle: "list",
     excerptPosition: "top",
