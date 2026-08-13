@@ -1,6 +1,7 @@
 schemaVersion: 1
 layoutPreset: official-v1
-siteName: 日宜房产
-siteDescription: 日宜房产提供日本房产租赁、买卖与安居服务，并整理区域选择、流程费用和日常生活的实用内容。
+siteName: 日宜找房-日本房产投资找房平台
+siteDescription: 日宜找房提供日本房产租赁、买卖与安居服务，并整理区域选择、流程费用和日常生活的实用内容。
+logo: /site-media/msrd25sh-uzhsj5sn.png
 primaryColor: "#1f6658"
 secondaryColor: "#17352f"
