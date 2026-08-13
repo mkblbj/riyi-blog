@@ -5,6 +5,11 @@ const stickySchema = z.preprocess(
   z.number().int().positive().optional(),
 );
 
+const cmsDateSchema = z.preprocess(
+  (value) => (value instanceof Date ? value.toISOString() : value),
+  z.iso.datetime({ offset: true }),
+);
+
 export const RawPostSchema = z.object({
   id: z.uuid(),
   title: z.string().trim().min(1).max(120),
@@ -13,7 +18,7 @@ export const RawPostSchema = z.object({
   categories: z.array(z.uuid()).length(1),
   tags: z.array(z.string().trim().min(1).max(40)).default([]),
   authorName: z.string().trim().min(1).max(60),
-  date: z.iso.datetime({ offset: true }),
+  date: cmsDateSchema,
   top: z.boolean().default(false),
   sticky: stickySchema,
   status: z.enum(["draft", "published", "archived"]),
