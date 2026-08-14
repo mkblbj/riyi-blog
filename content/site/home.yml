@@ -1,7 +1,8 @@
 hero:
-  title: 日宜房产
+  title: 日宜找房
   description: 日本找房，就上日宜。找房服务与实用内容，都在这里。
-  imageAlt: 日宜房产
+  image: /site-media/mssk33a6-e7x1wnik.jpg
+  imageAlt: 日宜找房
   quickLinks:
     - id: rent
       enabled: true
