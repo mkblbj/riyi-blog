@@ -2,5 +2,5 @@ id: 44444444-4444-4444-8444-444444444444
 slug: area-guide
 name: 区域介绍
 description: 日本各地区交通、配套与居住特点。
-enabled: true
+enabled: false
 order: 40
