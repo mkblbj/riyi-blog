@@ -23,7 +23,7 @@ hero:
       title: 查看日宜房源
       description: 返回日宜房产平台寻找合适房源
       kind: external
-      href: https://riyihome.com
+      href: https://web.riyihome.com
       order: 30
 appDownload:
   enabled: true
