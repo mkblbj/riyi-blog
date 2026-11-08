@@ -49,7 +49,6 @@ async function buildFixture() {
   );
   if (!aboutNavigation) throw new Error("fixture is missing About navigation");
   aboutNavigation.href = "/about/?from=nav#team";
-  content.categories.at(-1)!.enabled = false;
   const siteManifest: SiteManifest = SiteManifestSchema.parse({
     generatedAt: "2026-08-10T03:00:00.000Z",
     content,

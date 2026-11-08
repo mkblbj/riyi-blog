@@ -23,16 +23,30 @@ function navText(item: DefaultTheme.NavItem): string | undefined {
 }
 
 describe("runtime navigation", () => {
-  it("sorts Home with ordinary items by order and groups overflow under More", () => {
-    const contentWithEightVisibleItems = structuredClone(manifest.content);
-    contentWithEightVisibleItems.navigation.items.splice(6, 0, {
-      id: "71000000-0000-4000-8000-000000000007",
-      label: "房产政策",
-      href: "/category/property-policy/",
-      external: false,
-      newWindow: false,
-      order: 55,
-    });
+  it("keeps Home among the primary items and groups overflow under More", () => {
+    const items = [
+      ["首页", "/"],
+      ["租房指南", "/category/rent-guide/"],
+      ["买房指南", "/category/purchase-guide/"],
+      ["日本生活", "/category/life/"],
+      ["区域介绍", "/category/area-guide/"],
+      ["关于日宜", "/about/"],
+      ["房产政策", "/category/property-policy/"],
+      ["查看房源", "https://riyihome.com"],
+    ] as const;
+    const contentWithEightVisibleItems: ResolvedSiteContent = {
+      ...manifest.content,
+      navigation: {
+        items: items.map(([label, href], index) => ({
+          id: `test-nav-${index}`,
+          label,
+          href,
+          external: href.startsWith("https://"),
+          newWindow: href.startsWith("https://"),
+          order: index * 10,
+        })),
+      },
+    };
 
     const nav = projectNavigation(contentWithEightVisibleItems, 6);
 

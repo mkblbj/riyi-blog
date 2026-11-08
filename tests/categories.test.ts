@@ -3,7 +3,7 @@ import matter from "gray-matter";
 import { createMarkdownRenderer } from "vitepress";
 import { describe, expect, it } from "vitest";
 import { renderCategoryPage } from "../scripts/content/render-category.js";
-import { toPublicPost } from "../scripts/content/render-post.js";
+import { renderPost, toPublicPost } from "../scripts/content/render-post.js";
 import type { PublicPost } from "../scripts/content/schema.js";
 
 const rentId = "11111111-1111-4111-8111-111111111111";
@@ -89,6 +89,17 @@ describe("category pages", () => {
     expect($.root().text()).toContain("安全说明 <script>alert(3)</script>");
     expect($.root().text()).toContain("伪造列表");
     expect($.root().text()).toContain("安全文章");
+  });
+});
+
+describe("public post rendering", () => {
+  it("preserves a leading Markdown divider in an article body", () => {
+    const body = "---\n\n# 日本找房 FAQ\n\n正文内容。\n\n---";
+    const output = renderPost({ ...publishedPost, body });
+    const parsed = matter(output);
+
+    expect(parsed.data.title).toBe("租房文章");
+    expect(parsed.content).toContain(body);
   });
 });
 
