@@ -60,7 +60,7 @@ export function renderPost(post: PublicPost): string {
 [返回日宜房产平台](https://riyihome.com)
 `;
 
-  return matter.stringify(publicBody, {
+  return matter.stringify({ content: publicBody }, {
     id,
     title,
     description,
